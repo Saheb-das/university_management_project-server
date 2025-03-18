@@ -1,0 +1,20 @@
+model Batch {
+    id        String @id @default(cuid())
+    name      String @unique
+    batchYear Int
+
+    department   Department @relation(references: [id], fields: [departmentId])
+    departmentId String
+
+    course   Course @relation(references: [id], fields: [courseId])
+    courseId String
+
+    students      Student[]
+    results       Result[]
+    attendances   Attendance[]
+    asignTeachers AsignTeacher[]
+    notes         Note[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

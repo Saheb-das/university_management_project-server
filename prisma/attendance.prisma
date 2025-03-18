@@ -1,0 +1,25 @@
+enum AttendanceStatus {
+    absent
+    present
+}
+
+model Attendance {
+    id          String           @id @default(cuid())
+    sessionDate DateTime
+    status      AttendanceStatus
+
+    student   Student @relation(references: [id], fields: [studentId])
+    studentId String
+
+    semester   Semester @relation(references: [id], fields: [semesterId])
+    semesterId String
+
+    subject   Subject @relation(references: [id], fields: [subjectId])
+    subjectId String
+
+    batch   Batch  @relation(references: [id], fields: [batchId])
+    batchId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

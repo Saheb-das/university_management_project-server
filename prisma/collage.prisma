@@ -1,0 +1,71 @@
+model Collage {
+    id             String   @id @default(cuid())
+    name           String
+    address        String
+    registrationNo String
+    approvedBy     String
+    avatar         String
+    ranking        String
+    established    String
+    programs       String[]
+    campusSize     String
+
+    bankAccount   BankAccount @relation(references: [id], fields: [bankAccountId])
+    bankAccountId String      @unique
+
+    department Department[]
+    users      User[]
+    events     Event[]
+    salaries   Salary[]
+    tutionFees TutionFee[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum DeptType {
+    engineering
+    medical
+    law
+    management
+    internal
+}
+
+model Department {
+    id        String   @id @default(cuid())
+    name      String
+    type      DeptType
+    collage   Collage  @relation(references: [id], fields: [collageId])
+    collageId String   @unique
+
+    degree        Degree[]
+    Student       Student[]
+    batches       Batch[]
+    asignTeachers AsignTeacher[]
+    admissions    Admission[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum DegreeType {
+    bachelor
+    master
+    phd
+    diploma
+}
+
+model Degree {
+    id   String     @id @default(cuid())
+    name String
+    type DegreeType
+
+    department   Department @relation(references: [id], fields: [departmentId])
+    departmentId String
+
+    courses    Course[]
+    admissions Admission[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

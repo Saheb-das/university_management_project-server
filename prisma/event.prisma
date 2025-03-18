@@ -1,0 +1,26 @@
+enum EventType {
+    academic
+    cultural_festive
+    sports
+    technical
+    social_awareness
+    alumni_networking
+    fun_informal
+}
+
+model Event {
+    id     String    @id @default(cuid())
+    title  String
+    date   String
+    time   String
+    place  String
+    url    String?
+    avatar String?
+    type   EventType
+
+    collage   Collage @relation(references: [id], fields: [collageId])
+    collageId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,83 @@
+enum TransactionType {
+    salary
+    tutionFee
+}
+
+enum TransactionMode {
+    online
+    banking
+    cash
+}
+
+model Transaction {
+    id       String          @id @default(cuid())
+    type     TransactionType
+    userRole UserRole
+    amount   String
+    date     String
+    time     String
+    mode     TransactionMode
+    utr      String
+
+    salary    Salary?
+    tutionFee TutionFee?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum Month {
+    january
+    february
+    march
+    april
+    may
+    june
+    july
+    august
+    september
+    october
+    november
+    december
+}
+
+model Salary {
+    id               String @id @default(cuid())
+    inMonth          Month
+    salaryAmount     String
+    performanceBonus String
+    totalAmount      String
+
+    sender   Collage @relation(references: [id], fields: [senderId])
+    senderId String
+
+    reciever   Stuff  @relation(references: [id], fields: [recieverId])
+    recieverId String
+
+    transaction   Transaction @relation(references: [id], fields: [transactionId])
+    transactionId String      @unique
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model TutionFee {
+    id          String  @id @default(cuid())
+    semNo       Int
+    semFees     String
+    lateFine    String
+    totalAmount String
+    isVerified  Boolean @default(false)
+
+    sender   Student @relation(references: [id], fields: [senderId])
+    senderId String
+
+    reciever   Collage @relation(references: [id], fields: [recieverId])
+    recieverId String
+
+    transaction   Transaction @relation(references: [id], fields: [transactionId])
+    transactionId String      @unique
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

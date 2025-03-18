@@ -1,0 +1,18 @@
+model Note {
+    id      String   @id @default(cuid())
+    title   String
+    date    DateTime
+    fileUrl String
+
+    teacher   Stuff  @relation(references: [id], fields: [teacherId])
+    teacherId String
+
+    semester   Semester @relation(references: [id], fields: [semesterId])
+    semesterId String
+
+    batch   Batch  @relation(references: [id], fields: [batchId])
+    batchId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

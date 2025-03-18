@@ -1,0 +1,38 @@
+model Conversation {
+    id   String @id @default(cuid())
+    name String
+
+    participants Participant[]
+    messages     Message[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Participant {
+    id   String   @id @default(cuid())
+    role UserRole
+
+    user   User   @relation(references: [id], fields: [userId])
+    userId String
+
+    conversation   Conversation @relation(references: [id], fields: [conversationId])
+    conversationId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Message {
+    id      String @id @default(cuid())
+    content String
+
+    sender   User   @relation(references: [id], fields: [senderId])
+    senderId String
+
+    conversation   Conversation @relation(references: [id], fields: [conversationId])
+    conversationId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

@@ -1,0 +1,32 @@
+enum ProjectType {
+    solo
+    group
+}
+
+model Project {
+    id         String      @id @default(cuid())
+    title      String
+    date       DateTime
+    projectUrl String
+    avatat     String?
+    type       ProjectType
+
+    studentsOnProjects StudentsOnProjects[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+// this is junction table for student and project ( many-to-many )
+model StudentsOnProjects {
+    id String @id @default(cuid())
+
+    student   Student @relation(references: [id], fields: [studentId])
+    studentId String
+
+    project   Project @relation(references: [id], fields: [projectId])
+    projectId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

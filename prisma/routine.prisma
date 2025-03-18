@@ -1,0 +1,51 @@
+model Routine {
+    id String @id @default(cuid())
+
+    semester   Semester @relation(references: [id], fields: [semesterId])
+    semesterId String
+
+    schedules Schedule[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum Day {
+    sunday
+    monday
+    tuesday
+    wednesday
+    thursday
+    friday
+    saturday
+}
+
+model Schedule {
+    id    String @id @default(cuid())
+    break String
+    day   Day
+
+    routine   Routine @relation(references: [id], fields: [routineId])
+    routineId String
+
+    lectures Lecture[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Lecture {
+    id        String @id @default(cuid())
+    subject   String
+    startTime String
+    endTime   String
+    room      String
+
+    schedule   Schedule @relation(references: [id], fields: [scheduleId])
+    scheduleId String
+
+    asignTeacher AsignTeacher?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

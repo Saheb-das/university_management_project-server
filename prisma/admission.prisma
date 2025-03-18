@@ -1,0 +1,23 @@
+model Admission {
+    id         String @id @default(cuid())
+    commission String
+    inYear     Int
+
+    student   Student @relation(references: [id], fields: [studentId])
+    studentId String  @unique
+
+    counsellor   Stuff  @relation(references: [id], fields: [counsellorId])
+    counsellorId String
+
+    department   Department @relation(references: [id], fields: [departmentId])
+    departmentId String
+
+    degree   Degree @relation(references: [id], fields: [degreeId])
+    degreeId String
+
+    course   Course @relation(references: [id], fields: [courseId])
+    courseId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

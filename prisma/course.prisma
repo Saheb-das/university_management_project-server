@@ -1,0 +1,71 @@
+model Course {
+    id          String @id @default(cuid())
+    name        String
+    duration    Int
+    courseFees  String
+    numberOfSem Int
+
+    degree   Degree @relation(references: [id], fields: [degreeId])
+    degreeId String
+
+    semesters  Semester[]
+    Student    Student[]
+    batches    Batch[]
+    admissions Admission[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Semester {
+    id    String @id @default(cuid())
+    semNo Int
+
+    subjects Subject[]
+    exams    Exam[]
+
+    course   Course @relation(references: [id], fields: [courseId])
+    courseId String
+
+    results       Result[]
+    attendances   Attendance[]
+    routines      Routine[]
+    asignTeachers AsignTeacher[]
+    notes         Note[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Subject {
+    id         String   @id @default(cuid())
+    name       String
+    credit     Int
+    semester   Semester @relation(references: [id], fields: [semesterId])
+    semesterId String
+
+    results     Result[]
+    attendances Attendance[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+enum ExamType {
+    internal_1
+    internal_2
+    final
+    lab
+}
+
+model Exam {
+    id         String   @id @default(cuid())
+    type       ExamType
+    semester   Semester @relation(references: [id], fields: [semesterId])
+    semesterId String
+
+    results Result[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

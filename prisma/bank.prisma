@@ -1,0 +1,13 @@
+model BankAccount {
+    id                String @id @default(cuid())
+    accountNo         String
+    ifscCode          String
+    bankName          String
+    accountHolderName String
+
+    collage Collage?
+    stuff   Stuff?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

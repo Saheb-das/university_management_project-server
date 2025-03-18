@@ -1,0 +1,105 @@
+enum UserRole {
+    student
+    teacher
+    admin
+    superadmin
+    examceller
+    counsellor
+    accountant
+}
+
+enum ActiveStatus {
+    regular
+    suspend
+    blocked
+}
+
+model User {
+    id           String       @id @default(cuid())
+    firstName    String
+    lastName     String
+    email        String
+    role         UserRole
+    password     String
+    activeStatus ActiveStatus
+
+    profile Profile?
+
+    collage      Collage       @relation(references: [id], fields: [collageId])
+    collageId    String
+    participants Participant[]
+    messages     Message[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Profile {
+    id       String @id @default(cuid())
+    address  String
+    phoneNo  String
+    aadharNo String
+    avatar   String
+
+    user   User   @relation(references: [id], fields: [userId])
+    userId String @unique
+
+    stuff   Stuff?
+    student Student?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Stuff {
+    id            String @id @default(cuid())
+    highestDegree String
+    specializedIn String
+
+    bankAccount   BankAccount @relation(references: [id], fields: [bankAccountId])
+    bankAccountId String      @unique
+
+    profile   Profile @relation(references: [id], fields: [profileId])
+    profileId String  @unique
+
+    asignTeacherss AsignTeacher[]
+    salaries       Salary[]
+    admissions     Admission[]
+    notes          Note[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Student {
+    id               String @id @default(cuid())
+    dob              String
+    guardianName     String
+    relWithGuardian  String
+    gradeAtHigherSec String
+    gradeAtSec       String
+    admissionYear    String
+    rollNo           String
+    registretionNo   String
+
+    profile   Profile @relation(references: [id], fields: [profileId])
+    profileId String  @unique
+
+    department   Department @relation(references: [id], fields: [departmentId])
+    departmentId String
+
+    course   Course @relation(references: [id], fields: [courseId])
+    courseId String
+
+    batch   Batch  @relation(references: [id], fields: [batchId])
+    batchId String
+
+    result             Result[]
+    attendances        Attendance[]
+    studentsOnProjects StudentsOnProjects[]
+    tutionFees         TutionFee[]
+    admission          Admission?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}

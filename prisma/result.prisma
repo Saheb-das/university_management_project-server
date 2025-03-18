@@ -1,0 +1,22 @@
+model Result {
+    id    String @id @default(cuid())
+    marks Float
+
+    student   Student @relation(references: [id], fields: [studentId])
+    studentId String
+
+    batch   Batch  @relation(references: [id], fields: [batchId])
+    batchId String
+
+    semester   Semester @relation(references: [id], fields: [semesterId])
+    semesterId String
+
+    subject   Subject @relation(references: [id], fields: [subjectId])
+    subjectId String
+
+    exam   Exam   @relation(references: [id], fields: [examId])
+    examId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
