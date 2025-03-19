@@ -1,0 +1,75 @@
+{
+  "roles": [
+    {
+      "name": "superadmin",
+      "permissions": [
+        "create_collage",
+        "create_department",
+        "create_account",
+        "create_admin",
+        "read_collage",
+        "read_department",
+        "read_account",
+        "read_admin",
+        "update_collage",
+        "update_department",
+        "update_account",
+        "update_admin",
+        "delete_collage",
+        "delete_department",
+        "delete_account",
+        "delete_admin"
+      ]
+    },
+    {
+      "name": "admin",
+      "permissions": [
+        "create_counsellor",
+        "create_examceller",
+        "create_accountant",
+        "create_teacher",
+        "read_counsellor",
+        "read_examceller",
+        "read_teacher",
+        "read_student",
+        "update_record",
+        "delete_counsellor",
+        "delete_examceller",
+        "delete_teacher",
+        "assign_teacher"
+      ]
+    },
+    {
+      "name": "accountant",
+      "permissions": ["send_salary", "read_payments", "confirm_fees"]
+    },
+    {
+      "name": "counsellor",
+      "permissions": ["create_student", "read_my_students"]
+    },
+    {
+      "name": "examceller",
+      "permissions": [
+        "confirm_docs",
+        "create_results",
+        "read_results",
+        "update_results"
+      ]
+    },
+    {
+      "name": "teacher",
+      "permissions": ["create_attendence", "create_notes", "read_students"]
+    },
+    {
+      "name": "student",
+      "permissions": [
+        "pay_tution_fees",
+        "read_result",
+        "read_teachers",
+        "read_events",
+        "read_student",
+        "read_departmentTeachers"
+      ]
+    }
+  ]
+}

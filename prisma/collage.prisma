@@ -3,12 +3,12 @@ model Collage {
     name           String
     address        String
     registrationNo String
-    approvedBy     String
-    avatar         String
-    ranking        String
+    approvedBy     String?
+    avatar         String?
+    ranking        String?
     established    String
     programs       String[]
-    campusSize     String
+    campusSize     String?
 
     bankAccount   BankAccount @relation(references: [id], fields: [bankAccountId])
     bankAccountId String      @unique

@@ -21,7 +21,7 @@ model User {
     email        String
     role         UserRole
     password     String
-    activeStatus ActiveStatus
+    activeStatus ActiveStatus @default(regular)
 
     profile Profile?
 
@@ -35,11 +35,11 @@ model User {
 }
 
 model Profile {
-    id       String @id @default(cuid())
+    id       String  @id @default(cuid())
     address  String
     phoneNo  String
     aadharNo String
-    avatar   String
+    avatar   String?
 
     user   User   @relation(references: [id], fields: [userId])
     userId String @unique
@@ -56,8 +56,8 @@ model Stuff {
     highestDegree String
     specializedIn String
 
-    bankAccount   BankAccount @relation(references: [id], fields: [bankAccountId])
-    bankAccountId String      @unique
+    bankAccount   BankAccount? @relation(references: [id], fields: [bankAccountId])
+    bankAccountId String?      @unique
 
     profile   Profile @relation(references: [id], fields: [profileId])
     profileId String  @unique
@@ -72,15 +72,15 @@ model Stuff {
 }
 
 model Student {
-    id               String @id @default(cuid())
+    id               String  @id @default(cuid())
     dob              String
     guardianName     String
     relWithGuardian  String
     gradeAtHigherSec String
     gradeAtSec       String
     admissionYear    String
-    rollNo           String
-    registretionNo   String
+    rollNo           String?
+    registretionNo   String?
 
     profile   Profile @relation(references: [id], fields: [profileId])
     profileId String  @unique
