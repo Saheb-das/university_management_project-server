@@ -1,6 +1,11 @@
 // external import
 import { z } from "zod";
 
+// internal import
+import { collageSchema } from "./collage";
+import { stuffSchema } from "./user";
+import { bankSchema } from "./bank";
+
 export const passwordValidation = z
   .string()
   .min(8)
@@ -14,20 +19,10 @@ export const phoneNoValidation = z
   .length(10, "Phone number must be exactly 10 digits")
   .regex(/^\d{10}$/, "Phone number must only contain digits");
 
-export const registerSchema = z.object({
-  firstName: z.string().min(3, "atlast 3 char"),
-  lastName: z.string().min(2, "atleast 2 char"),
-  email: z.string().email(),
-  password: passwordValidation,
-  role: z.enum(["superadmin"]),
-  address: z.string().min(10, "atleast 10 char"),
-  phoneNo: phoneNoValidation,
-  adhaarNo: z.string(),
-  highestDegree: z.string(),
-  specialization: z.string(),
-  collageName: z.string().min(10, "atleast 10 char"),
-  collageAddress: z.string().min(10, "atleast 10 char"),
-  collageRegNo: z.string().min(6, "6 char required"),
+const registerSchema = z.object({
+  user: stuffSchema,
+  collage: collageSchema,
+  collageBankDetails: bankSchema,
 });
 
 export type TRegisterClient = z.infer<typeof registerSchema>;

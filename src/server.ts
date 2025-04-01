@@ -16,10 +16,10 @@ dotenv.config();
 const httpServer = createServer(app);
 
 // middleware
-app.use(cors());
-app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cors());
+app.use(morgan("dev"));
 
 // health route
 app.use("/health", (_req, res) => {

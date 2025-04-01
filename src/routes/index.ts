@@ -13,6 +13,8 @@ import projectRoutes from "./project";
 import eventRoutes from "./event";
 import resultRoutes from "./result";
 import uploadRoutes from "./upload";
+import collageRoutes from "./collage";
+import { authenticateHTTP } from "../middleware/authenticate";
 
 // create router
 const router = express.Router();
@@ -20,6 +22,7 @@ const router = express.Router();
 // routes
 router.use("/auth", authRoutes);
 router.use("/users", userRoutes);
+router.use("/collages", authenticateHTTP, collageRoutes);
 router.use("/courses", courseRoutes);
 router.use("/transactions", transactionRoutes);
 router.use("/routines", routineRoutes);
