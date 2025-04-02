@@ -15,7 +15,13 @@ router.patch(
   collageController.updateCollage
 );
 
-router.post("/:id/departments");
+router.post(
+  "/:id/departments",
+  checkPermission("create_department"),
+  collageController.createCollageDepartment
+);
+
+router.get("/:id/departments", collageController.getDepartments);
 
 // export
 export default router;
