@@ -38,11 +38,12 @@ model Semester {
 }
 
 model Subject {
-    id         String   @id @default(cuid())
-    name       String
-    credit     Int
-    semester   Semester @relation(references: [id], fields: [semesterId])
-    semesterId String
+    id          String   @id @default(cuid())
+    name        String
+    subjectCode String
+    credit      Int
+    semester    Semester @relation(references: [id], fields: [semesterId])
+    semesterId  String
 
     results     Result[]
     attendances Attendance[]

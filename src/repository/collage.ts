@@ -20,6 +20,16 @@ async function create(payload: ICollage): Promise<Collage | null> {
   return newCollage;
 }
 
+async function findById(collageId: string): Promise<Collage | null> {
+  const collage = await prisma.collage.findUnique({
+    where: {
+      id: collageId,
+    },
+  });
+
+  return collage;
+}
+
 async function update(
   payload: Partial<ICollageUpdate>,
   id: string
@@ -58,5 +68,6 @@ async function update(
 // export
 export default {
   create,
+  findById,
   update,
 };

@@ -104,7 +104,7 @@ async function register(
 
     const stuffPayload: TStuff = {
       highestDegree: userDate.highestDegree,
-      specializedIn: userDate.specailizedIn,
+      specializedIn: userDate.specializedIn,
       bankAccountId: newUserBank.id,
       profileId: newProfile.id,
     };

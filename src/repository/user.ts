@@ -1,12 +1,54 @@
 // internal import
 import prisma from "../lib/prisma";
+import { IBaseUser } from "../service/user";
 
 // types import
+import { Prisma, User, UserRole } from "@prisma/client";
 import { TUser } from "../types";
-import { User, UserRole } from "@prisma/client";
+
+async function createBaseWithProfile(
+  userPayload: IBaseUser,
+  collageId: string
+): Promise<{
+  tx: Prisma.TransactionClient;
+  user: User;
+  profileId: string;
+}> {
+  const result = await prisma.$transaction(async (tx) => {
+    // create user
+    const newUser = await prisma.user.create({
+      data: {
+        firstName: userPayload.firstName,
+        lastName: userPayload.lastName,
+        email: userPayload.email,
+        password: userPayload.password,
+        role: userPayload.role,
+        activeStatus: userPayload.activeStatus,
+        collageId: collageId,
+      },
+    });
+
+    // create profile
+    const newProfile = await prisma.profile.create({
+      data: {
+        aadharNo: userPayload.aadharNo,
+        address: userPayload.address,
+        phoneNo: userPayload.phoneNo,
+        userId: newUser.id,
+      },
+    });
+
+    return { tx, user: newUser, profileId: newProfile.id };
+  });
+
+  return result;
+}
 
 async function create(payload: TUser): Promise<User | null> {
-  const newUser = await prisma.user.create({ data: payload });
+  const newUser = await prisma.user.create({
+    data: payload,
+  });
+
   return newUser;
 }
 
@@ -35,6 +77,7 @@ async function findByEmailAndRole(
 
 // export
 export default {
+  createBaseWithProfile,
   create,
   findById,
   findByEmailAndRole,

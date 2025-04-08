@@ -1,5 +1,12 @@
 // types import
-import { User, Profile, Student, Stuff } from "@prisma/client";
+import {
+  User,
+  Profile,
+  Student,
+  Stuff,
+  UserRole,
+  ActiveStatus,
+} from "@prisma/client";
 
 type Role =
   | "admin"
@@ -9,9 +16,10 @@ type Role =
   | "accountant"
   | "student";
 
-type TUser = Omit<User, "id" | "createdAt" | "updatedAt">;
-type TProfile = Omit<Profile, "id" | "avatar" | "createdAt" | "updatedAt">;
-type TStuff = Omit<Stuff, "id" | "createdAt" | "updatedAt">;
-type TStudent = Omit<Student, "id" | "createdAt" | "updatedAt">;
-
-export { TUser, TProfile, TStudent, TStuff };
+export type TUser = Omit<User, "id" | "createdAt" | "updatedAt">;
+export type TProfile = Omit<
+  Profile,
+  "id" | "avatar" | "createdAt" | "updatedAt"
+>;
+export type TStuff = Omit<Stuff, "id" | "createdAt" | "updatedAt">;
+export type TStudent = Omit<Student, "id" | "createdAt" | "updatedAt">;

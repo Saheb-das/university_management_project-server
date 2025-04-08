@@ -3,6 +3,7 @@ import express from "express";
 
 // internal import
 import transactionController from "../controller/transaction";
+import { checkPermission } from "../middleware/permission";
 
 // create router
 const router = express.Router();
@@ -10,9 +11,17 @@ const router = express.Router();
 // routes
 router.post("/", transactionController.createTransaction);
 
-router.get("/", transactionController.getTransactions);
+router.get(
+  "/",
+  checkPermission("read_transaction"),
+  transactionController.getTransactions
+);
 
-router.get("/:id", transactionController.getTransaction);
+router.get(
+  "/:id",
+  checkPermission("read_transaction"),
+  transactionController.getTransaction
+);
 
 router.patch("/:id", transactionController.updateTransaction);
 

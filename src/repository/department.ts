@@ -47,9 +47,30 @@ async function findByTypeAndCollageId(
   return department;
 }
 
+async function findByIdWithFilter(
+  deprtId: string,
+  field?: keyof Department,
+  value?: string
+): Promise<Department | null> {
+  const whereClause: any = {
+    id: deprtId,
+  };
+
+  if (field && value !== undefined) {
+    whereClause[field] = value;
+  }
+
+  const department = await prisma.department.findFirst({
+    where: whereClause,
+  });
+
+  return department;
+}
+
 // export
 export default {
   create,
   findByTypeAndCollageId,
   findAllByCollageId,
+  findByIdWithFilter,
 };

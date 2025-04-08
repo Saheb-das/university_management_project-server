@@ -21,7 +21,11 @@ router.post(
   collageController.createCollageDepartment
 );
 
-router.get("/:id/departments", collageController.getDepartments);
+router.get(
+  "/:id/departments",
+  checkPermission("read_collage"),
+  collageController.getDepartments
+);
 
 // export
 export default router;
