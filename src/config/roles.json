@@ -36,6 +36,7 @@
         "read_teacher",
         "read_student",
         "update_record",
+        "update_student",
         "delete_counsellor",
         "delete_examceller",
         "delete_teacher",

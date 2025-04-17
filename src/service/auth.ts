@@ -2,19 +2,17 @@
 import collageRepository from "../repository/collage";
 import bankRepository from "../repository/bank";
 import userRepository from "../repository/user";
-import stuffRepository from "../repository/stuff";
-import profileRepository from "../repository/profile";
 import { compareHashedPassword, genHashedPassword } from "../lib/password";
 import { CustomError } from "../lib/error";
+import { genJwtAccessToken } from "../lib/jwtToken";
 
 // types import
 import { TLoginClient } from "../zod/auth";
 import { TCollageClient } from "../zod/collage";
 import { TBankClient } from "../zod/bank";
-import { IBank, ICollage, TProfile, TStuff, TUser } from "../types";
+import { IBank, ICollage } from "../types";
 import { User } from "@prisma/client";
 import { TStuffClient } from "../zod/user";
-import { genJwtAccessToken } from "../lib/jwtToken";
 
 async function register(
   userDate: TStuffClient,
@@ -65,52 +63,26 @@ async function register(
       throw new CustomError("password not hashed", 500);
     }
 
-    const userPayload: TUser = {
+    const userPayload: TStuffClient = {
       firstName: userDate.firstName,
       lastName: userDate.lastName,
       email: userDate.email,
-      activeStatus: "regular",
       password: hashedPassword,
       role: userDate.role,
-      collageId: newCollage.id,
-    };
-
-    const newUser = await userRepository.create(userPayload);
-    if (!newUser) {
-      throw new CustomError("user not created", 500);
-    }
-
-    const profilePayload: TProfile = {
-      aadharNo: userDate.adhaarNo,
+      adhaarNo: userDate.adhaarNo,
       address: userDate.address,
       phoneNo: userDate.phoneNo,
-      userId: newUser.id,
-    };
-    const newProfile = await profileRepository.create(profilePayload);
-    if (!newProfile) {
-      throw new CustomError("profile not created", 500);
-    }
-
-    const userBankPayload: IBank = {
       bankName: userDate.bankName,
       accountNo: userDate.accountNo,
       ifscCode: userDate.ifscCode,
       accountHolderName: userDate.accountHolderName,
-    };
-    const newUserBank = await bankRepository.create(userBankPayload);
-    if (!newUserBank) {
-      throw new CustomError("user's bank not created", 500);
-    }
-
-    const stuffPayload: TStuff = {
       highestDegree: userDate.highestDegree,
       specializedIn: userDate.specializedIn,
-      bankAccountId: newUserBank.id,
-      profileId: newProfile.id,
     };
-    const newStuff = await stuffRepository.create(stuffPayload);
-    if (!newStuff) {
-      throw new CustomError("stuff not created", 500);
+
+    const newUser = await userRepository.create(userPayload, newCollage.id);
+    if (!newUser) {
+      throw new CustomError("user not created", 500);
     }
 
     return newUser;

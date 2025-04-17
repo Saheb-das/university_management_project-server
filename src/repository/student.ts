@@ -2,77 +2,63 @@
 import prisma from "../lib/prisma";
 
 // types import
-import { User } from "@prisma/client";
-import { TStudentClient } from "../zod/user";
-import { IIds } from "../service/user";
+import { IStudentFilter } from "../controller/student";
+import { Prisma, Student } from "@prisma/client";
 
-async function create(
-  payload: TStudentClient,
-  collageId: string,
-  idsPayload: IIds,
-  userId: string,
-  commissionIncome: string
-): Promise<User | null> {
-  const result = await prisma.$transaction(async (tx) => {
-    // create user
-    const newUser = await tx.user.create({
-      data: {
-        firstName: payload.firstName,
-        lastName: payload.lastName,
-        email: payload.email,
-        password: payload.password,
-        role: payload.role,
-        activeStatus: "regular",
-        collageId: collageId,
+async function findAll(filter: IStudentFilter): Promise<Student[] | null> {
+  const whereClause =
+    filter && filter.deg && filter.deprt && filter.year
+      ? {
+          departmentId: filter.deprt,
+          course: {
+            degreeId: filter.deg,
+          },
+          admissionYear: filter.year,
+        }
+      : {};
+
+  const students = await prisma.student.findMany({
+    where: whereClause,
+    include: {
+      profile: {
+        include: {
+          user: true,
+        },
       },
-    });
+    },
+  });
+  return students;
+}
 
-    // create profile
-    const newProfile = await tx.profile.create({
-      data: {
-        aadharNo: payload.adhaarNo,
-        address: payload.address,
-        phoneNo: payload.phoneNo,
-        userId: newUser.id,
+type StudentWithProfileUser = Prisma.StudentGetPayload<{
+  include: {
+    profile: {
+      include: {
+        user: true;
+      };
+    };
+  };
+}>;
+
+async function findById(id: string): Promise<StudentWithProfileUser | null> {
+  const student = await prisma.student.findUnique({
+    where: {
+      id: id,
+    },
+    include: {
+      profile: {
+        include: {
+          user: true,
+        },
       },
-    });
-
-    // create student
-    const newStudent = await tx.student.create({
-      data: {
-        dob: payload.dob,
-        admissionYear: payload.admissionYear,
-        gradeAtHigherSec: payload.gradeAtHigherSec,
-        gradeAtSec: payload.gradeAtSec,
-        guardianName: payload.guardianName,
-        relWithGuardian: payload.relWithGuardian,
-        batchId: idsPayload.batchId,
-        departmentId: idsPayload.departmentId,
-        courseId: idsPayload.courseId,
-        profileId: newProfile.id,
-      },
-    });
-
-    // create admission
-    const newAdmission = await tx.admission.create({
-      data: {
-        commission: commissionIncome,
-        inYear: Number(payload.admissionYear),
-        courseId: idsPayload.courseId,
-        departmentId: idsPayload.departmentId,
-        studentId: newStudent.id,
-        degreeId: idsPayload.degreeId,
-        counsellorId: userId,
-      },
-    });
-
-    return newUser;
+    },
   });
 
-  return result;
+  return student;
 }
 
 // export
 export default {
-  create,
+  findAll,
+  findById,
 };

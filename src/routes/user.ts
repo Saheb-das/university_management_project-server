@@ -8,16 +8,14 @@ import { checkPermission } from "../middleware/permission";
 // create router
 const router = express.Router();
 
-// TODO: student and stuff are separated
-
 // routes
 router.post("/", userController.createUser);
 
 router.get("/", userController.getUsers);
 
-router.get("/:id", userController.getUser);
+router.get("/teachers", userController.getTeacherUsers);
 
-router.get("/:id/profile", userController.getUserProfile);
+router.get("/:id", userController.getUser);
 
 router.patch("/:id", userController.updateUser);
 

@@ -15,5 +15,7 @@ router.post(
   subjectController.createSubjects
 );
 
+router.get("/semester", subjectController.getSubjectsBySemesterId);
+
 // export
 export default router;

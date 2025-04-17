@@ -1,17 +1,20 @@
 // internal import
-import studentRepository from "../repository/student";
-import stuffRepository from "../repository/stuff";
-import batchRepository from "../repository/batch";
-import degreeRepository from "../repository/degree";
-import admissionRepository from "../repository/admission";
+import userRepository from "../repository/user";
 import { CustomError } from "../lib/error";
 import { genHashedPassword } from "../lib/password";
+import asignTeacherRepository, { IAsign } from "../repository/asignTeacher";
+import batchRepository from "../repository/batch";
+import semesterRepository from "../repository/semester";
+import subjectRepository from "../repository/subject";
 
 // types import
-import { ActiveStatus, User, UserRole } from "@prisma/client";
-import { TStudentClient, TStuffClient } from "../zod/user";
-import { calcCommission } from "../utils/commission";
-import { TAdmission } from "../repository/admission";
+import { ActiveStatus, AsignTeacher, User, UserRole } from "@prisma/client";
+import {
+  TStuffClient,
+  TStuffRole,
+  TUpdateStudentInput,
+  TUpdateStuffInput,
+} from "../zod/user";
 
 export interface IBaseUser {
   firstName: string;
@@ -25,103 +28,10 @@ export interface IBaseUser {
   phoneNo: string;
 }
 
-export interface IIds {
-  departmentId: string;
-  courseId: string;
-  batchId: string;
-  degreeId: string;
-}
-
-async function createStudentUser(
-  payload: TStudentClient,
-  collageId: string,
-  userId: string
+async function createUser(
+  payload: TStuffClient,
+  collageId: string
 ): Promise<User | null> {
-  try {
-    const hashedPassword = await genHashedPassword(payload.password);
-    if (!hashedPassword) {
-      throw new CustomError("password not hashed", 500);
-    }
-
-    const stuff = await stuffRepository.findByUserId(userId);
-    if (!stuff) {
-      throw new CustomError("stuff not found", 404);
-    }
-
-    const isExistBatch = await batchRepository.findByName(payload.batch, {
-      includeDepartment: true,
-      includeCourse: true,
-    });
-    if (!isExistBatch) {
-      throw new CustomError(`${payload.batch} batch not found`, 404);
-    }
-
-    if (!isExistBatch.department) {
-      throw new CustomError("department not retrive", 404);
-    }
-
-    if (!isExistBatch.course) {
-      throw new CustomError("course not retrive", 404);
-    }
-
-    const isExistDegree = await degreeRepository.findByIdWithFilter(
-      isExistBatch.course.degreeId
-    );
-    if (!isExistDegree) {
-      throw new CustomError("degree not found", 404);
-    }
-
-    const commissionIncome = calcCommission({
-      courseName: isExistBatch.course.name,
-      degreeType: isExistDegree.type,
-      departmentType: isExistBatch.department.type,
-      role: "stuff",
-    });
-
-    const studentPayload: TStudentClient = {
-      firstName: payload.firstName,
-      lastName: payload.lastName,
-      email: payload.email,
-      password: hashedPassword,
-      role: payload.role,
-      adhaarNo: payload.adhaarNo,
-      address: payload.address,
-      phoneNo: payload.phoneNo,
-      dob: payload.dob,
-      guardianName: payload.guardianName,
-      relWithGuardian: payload.relWithGuardian,
-      admissionYear: payload.admissionYear,
-      gradeAtSec: payload.gradeAtSec,
-      gradeAtHigherSec: payload.gradeAtHigherSec,
-      batch: payload.batch,
-    };
-
-    const idsPayload: IIds = {
-      departmentId: isExistBatch.departmentId,
-      courseId: isExistBatch.courseId,
-      batchId: isExistBatch.id,
-      degreeId: isExistBatch.course.degreeId,
-    };
-
-    const newStudent = await studentRepository.create(
-      studentPayload,
-      collageId,
-      idsPayload,
-      stuff.id,
-      commissionIncome
-    );
-    if (!newStudent) {
-      throw new CustomError("student not created", 500);
-    }
-
-    return newStudent;
-  } catch (error) {
-    console.log("Error create student user", error);
-    return null;
-  }
-}
-
-async function createStuffUser(payload: TStuffClient, collageId: string) {
   try {
     const hashedPassword = await genHashedPassword(payload.password);
     if (!hashedPassword) {
@@ -145,20 +55,127 @@ async function createStuffUser(payload: TStuffClient, collageId: string) {
       accountHolderName: payload.accountHolderName,
     };
 
-    const newStuff = await stuffRepository.createFull(stuffPayload, collageId);
-    if (!newStuff) {
-      throw new CustomError("stuff not created", 500);
+    const newUser = await userRepository.create(stuffPayload, collageId);
+    if (!newUser) {
+      throw new CustomError("user not created", 500);
     }
 
-    return newStuff;
+    return newUser;
   } catch (error) {
-    console.log("Error create stuff user", 500);
+    console.log("Error create user", 500);
+    return null;
+  }
+}
+
+export interface RoleOpt {
+  student: boolean;
+  stuff: boolean;
+}
+
+async function getUser(userId: string, roleOpt: RoleOpt): Promise<User | null> {
+  try {
+    const user = await userRepository.findByIdWithDetails(userId, roleOpt);
+    if (!user) {
+      throw new CustomError("user not found");
+    }
+
+    return user;
+  } catch (error) {
+    console.log("Error finding user", error);
+    return null;
+  }
+}
+
+async function getAllUsers(
+  role: TStuffRole,
+  collageId: string
+): Promise<User[] | null> {
+  try {
+    const users = await userRepository.findAll(role, collageId);
+    return users;
+  } catch (error) {
+    console.log("Error fetching users", error);
+    return null;
+  }
+}
+
+async function getAllTeacherUsers(collageId: string): Promise<User[] | null> {
+  try {
+    if (!collageId) {
+      throw new CustomError("collage id required", 500);
+    }
+
+    const teachers = await userRepository.findAllTeachers(collageId);
+    if (!teachers) {
+      throw new CustomError("teachers user not found", 404);
+    }
+
+    return teachers;
+  } catch (error) {
+    console.log("Error fetching teachers", error);
+    return null;
+  }
+}
+
+interface IUpdateUser {
+  email?: string;
+  address?: string;
+  phoneNo?: string;
+  profileImg?: string;
+  highestDegree?: string;
+  specialization?: string;
+}
+
+async function updateStuffUser(
+  userId: string,
+  data: TUpdateStuffInput
+): Promise<User | null> {
+  try {
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new CustomError("user not found", 404);
+    }
+
+    const updatedUser = await userRepository.updateStuff(user.id, data);
+    if (!updatedUser) {
+      throw new CustomError("user not updated", 500);
+    }
+
+    return updatedUser;
+  } catch (error) {
+    console.log("Error updating stuff user", error);
+    return null;
+  }
+}
+
+async function updateStudentUser(
+  userId: string,
+  data: TUpdateStudentInput
+): Promise<User | null> {
+  try {
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new CustomError("user not found", 404);
+    }
+
+    const updatedUser = await userRepository.updateStudent(user.id, data);
+    if (!updatedUser) {
+      throw new CustomError("user not updated", 500);
+    }
+
+    return updatedUser;
+  } catch (error) {
+    console.log("Error updating student user", error);
     return null;
   }
 }
 
 // export
 export default {
-  createStudentUser,
-  createStuffUser,
+  createUser,
+  getUser,
+  getAllUsers,
+  getAllTeacherUsers,
+  updateStuffUser,
+  updateStudentUser,
 };

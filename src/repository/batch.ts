@@ -32,6 +32,18 @@ async function create(payload: IBatch): Promise<Batch | null> {
   return newBatch;
 }
 
+async function findAll(collageId: string): Promise<Batch[] | null> {
+  const batches = await prisma.batch.findMany({
+    where: {
+      department: {
+        collageId: collageId,
+      },
+    },
+  });
+
+  return batches;
+}
+
 async function findByName(
   batchName: string,
   options?: FindByNameOptions
@@ -56,8 +68,60 @@ async function findByName(
   return batch;
 }
 
+async function findByIdAndSemId(
+  id: string,
+  semId: string
+): Promise<Batch | null> {
+  const batch = await prisma.batch.findUnique({
+    where: {
+      id: id,
+      course: {
+        semesters: {
+          some: {
+            id: semId,
+          },
+        },
+      },
+    },
+  });
+
+  return batch;
+}
+
+export type BatchWithSemesters = Prisma.BatchGetPayload<{
+  include: {
+    course: {
+      select: {
+        semesters: true;
+      };
+    };
+  };
+}>;
+
+async function findByIdWithSemesters(
+  batchId: string
+): Promise<BatchWithSemesters | null> {
+  const batchWithSems = await prisma.batch.findFirst({
+    where: {
+      id: batchId,
+    },
+    include: {
+      course: {
+        select: {
+          semesters: true,
+        },
+      },
+    },
+  });
+
+  return batchWithSems;
+}
+
 // export
 export default {
   create,
   findByName,
+  findByIdAndSemId,
+  findByIdWithSemesters,
+  findAll,
 };

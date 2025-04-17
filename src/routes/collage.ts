@@ -16,13 +16,13 @@ router.patch(
 );
 
 router.post(
-  "/:id/departments",
+  "/departments",
   checkPermission("create_department"),
   collageController.createCollageDepartment
 );
 
 router.get(
-  "/:id/departments",
+  "/departments",
   checkPermission("read_collage"),
   collageController.getDepartments
 );

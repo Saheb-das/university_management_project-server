@@ -9,14 +9,29 @@ async function create(
   collageId: string,
   department: IDeprtInfo
 ): Promise<Department> {
-  const newDepartment = prisma.department.create({
-    data: {
-      type: department.type,
-      collageId: collageId,
-    },
+  const result = await prisma.$transaction(async (tx) => {
+    // not found, create department
+    const deprt = await tx.department.create({
+      data: {
+        type: department.type,
+        collageId: collageId,
+      },
+    });
+
+    // create degree according to department degree
+    for (const degType of department.degree) {
+      let newDeg = await tx.degree.create({
+        data: {
+          type: degType,
+          departmentId: deprt.id,
+        },
+      });
+    }
+
+    return deprt;
   });
 
-  return newDepartment;
+  return result;
 }
 
 async function findAllByCollageId(

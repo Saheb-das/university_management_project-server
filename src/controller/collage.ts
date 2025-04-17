@@ -72,11 +72,10 @@ async function createCollageDepartment(
 }
 
 async function getDepartments(
-  req: AuthRequest<{}, { id: string }, { degree: string }>,
+  req: AuthRequest<{}, {}, { degree: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const { id } = req.params;
   const { degree } = req.query;
 
   try {
@@ -84,14 +83,12 @@ async function getDepartments(
       throw new CustomError("unauthorized user", 401);
     }
 
-    if (!id) {
-      throw new CustomError("collage id require in params", 400);
-    }
+    const collageId = req.authUser.collageId;
 
     const includeDegree = degree === "true";
 
     const departments = await collageService.getAllDepartments(
-      id,
+      collageId,
       includeDegree
     );
     if (!departments) {

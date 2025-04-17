@@ -2,7 +2,7 @@
 import prisma from "../lib/prisma";
 
 // types import
-import { Prisma } from "@prisma/client";
+import { Prisma, Subject } from "@prisma/client";
 import { ISubjects } from "../types/subject";
 
 async function createMany(
@@ -25,7 +25,29 @@ async function createMany(
   return courseSubjects;
 }
 
+async function findAllBySemesterId(semId: string): Promise<Subject[] | null> {
+  const subjects = await prisma.subject.findMany({
+    where: {
+      semesterId: semId,
+    },
+  });
+
+  return subjects;
+}
+
+async function findById(subjectId: string): Promise<Subject | null> {
+  const subject = await prisma.subject.findUnique({
+    where: {
+      id: subjectId,
+    },
+  });
+
+  return subject;
+}
+
 // export
 export default {
   createMany,
+  findAllBySemesterId,
+  findById,
 };

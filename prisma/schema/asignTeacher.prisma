@@ -13,8 +13,10 @@ model AsignTeacher {
     semester   Semester @relation(references: [id], fields: [semesterId])
     semesterId String
 
-    lecture   Lecture @relation(references: [id], fields: [lectureId])
-    lectureId String  @unique
+    subject   Subject @relation(references: [id], fields: [subjectId])
+    subjectId String
+
+    lectures Lecture[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

@@ -3,7 +3,7 @@ import { CustomError } from "../lib/error";
 import departmentRepository from "../repository/department";
 import degreeRepository from "../repository/degree";
 import courseRepository from "../repository/course";
-import batchRepository from "../repository/batch";
+import batchRepository, { BatchWithSemesters } from "../repository/batch";
 
 // types import
 import { Batch } from "@prisma/client";
@@ -67,6 +67,24 @@ async function createBatch(batchInfo: IBatchClient): Promise<Batch | null> {
   }
 }
 
+async function getAllBatches(collageId: string): Promise<Batch[] | null> {
+  try {
+    if (!collageId) {
+      throw new CustomError("collage id required", 403);
+    }
+
+    const batches = await batchRepository.findAll(collageId);
+    if (!batches) {
+      throw new CustomError("batches not found", 404);
+    }
+
+    return batches;
+  } catch (error) {
+    console.log("Error fetching batches", error);
+    return null;
+  }
+}
+
 interface IBatchOpts {
   department: boolean;
   course: boolean;
@@ -96,8 +114,26 @@ async function getBatchByName(
   }
 }
 
+async function getBatchWithSemesters(
+  batchId: string
+): Promise<BatchWithSemesters | null> {
+  try {
+    const batch = await batchRepository.findByIdWithSemesters(batchId);
+    if (!batch) {
+      throw new CustomError("batch with semesters not found");
+    }
+
+    return batch;
+  } catch (error) {
+    console.log("Error fetching batch", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createBatch,
+  getAllBatches,
   getBatchByName,
+  getBatchWithSemesters,
 };

@@ -1,27 +1,27 @@
 // internal import
 import { CustomError } from "../lib/error";
-import userService from "../service/user";
+import userService, { RoleOpt } from "../service/user";
 import {
-  studentSchema,
+  stuffRoleSchema,
   stuffSchema,
-  TStudentClient,
   TStuffClient,
+  TStuffRole,
+  TUpdateStudentInput,
+  TUpdateStuffInput,
+  updateStudentUserSchema,
+  updateStuffUserSchema,
 } from "../zod/user";
 
 // types import
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "../types";
-import { User } from "@prisma/client";
-
-type TUserClient = TStudentClient & TStuffClient;
 
 async function createUser(
-  req: AuthRequest<TUserClient, {}, { user: string }>,
+  req: AuthRequest<TStuffClient>,
   res: Response,
   next: NextFunction
 ) {
   const userInfo = req.body;
-  const { user } = req.query;
 
   try {
     if (!req.authUser) {
@@ -29,40 +29,13 @@ async function createUser(
     }
 
     const collageId = req.authUser.collageId;
-    const userId = req.authUser.id;
 
-    if (!userInfo) {
-      throw new CustomError("user data required", 400);
+    const isValid = stuffSchema.safeParse(userInfo);
+    if (!isValid.success) {
+      throw new CustomError(isValid.error.message, 400);
     }
 
-    if (!user) {
-      throw new CustomError("query params required", 400);
-    }
-
-    let newUser: User | null = null;
-
-    if (user === "student") {
-      const isValid = studentSchema.safeParse(userInfo);
-      if (!isValid.success) {
-        throw new CustomError(isValid.error.message, 400);
-      }
-
-      newUser = await userService.createStudentUser(
-        isValid.data,
-        collageId,
-        userId
-      );
-    }
-
-    if (user === "stuff") {
-      const isValid = stuffSchema.safeParse(userInfo);
-      if (!isValid.success) {
-        throw new CustomError(isValid.error.message, 400);
-      }
-
-      newUser = await userService.createStuffUser(userInfo, collageId);
-    }
-
+    const newUser = await userService.createUser(userInfo, collageId);
     if (!newUser) {
       throw new CustomError("user not created", 500);
     }
@@ -77,13 +50,164 @@ async function createUser(
   }
 }
 
-async function getUsers() {}
+async function getUsers(
+  req: AuthRequest<{}, {}, { role: TStuffRole }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { role } = req.query;
 
-async function getUser() {}
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
 
-async function getUserProfile() {}
+    const collageId = req.authUser.collageId;
 
-async function updateUser() {}
+    const isValidRole = stuffRoleSchema.safeParse(role);
+    if (!isValidRole.success) {
+      throw new CustomError("invalid role", 400);
+    }
+
+    const users = await userService.getAllUsers(role, collageId);
+    if (!users) {
+      throw new CustomError("users not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "users fetched successfully",
+      users: users,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getUser(
+  req: AuthRequest<{}, { id: string }, { role: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { id } = req.params;
+  const { role } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    const defaultRole: RoleOpt = {
+      student: false,
+      stuff: false,
+    };
+
+    const studentRole = role === "student";
+    const stuffRole = role === "stuff";
+
+    const user = await userService.getUser(id, {
+      ...defaultRole,
+      student: studentRole,
+      stuff: stuffRole,
+    });
+    if (!user) {
+      throw new CustomError("user not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "user fetched successfully",
+      user: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getTeacherUsers(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    const collageId = req.authUser.collageId;
+
+    const teacherUsers = await userService.getAllTeacherUsers(collageId);
+    if (!teacherUsers) {
+      throw new CustomError("users not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "user fetched successfully",
+      teachers: teacherUsers,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+type UpdateUserInput = TUpdateStuffInput | TUpdateStudentInput;
+
+async function updateUser(
+  req: AuthRequest<UpdateUserInput, { id: string }, { role: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const updateData = req.body;
+  const { id } = req.params;
+  const { role } = req.query;
+
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!id) {
+      throw new CustomError("user id params required", 400);
+    }
+
+    let updatedUser: any = null;
+    if (role === "student") {
+      const isValid = updateStudentUserSchema.safeParse(updateData);
+      if (!isValid.success) {
+        throw new CustomError("invalid input", 400, isValid.error);
+      }
+
+      updatedUser = await userService.updateStudentUser(
+        id,
+        updateData as TUpdateStudentInput
+      );
+      if (!updatedUser) {
+        throw new CustomError("user not updated", 500);
+      }
+    } else {
+      const isValid = updateStuffUserSchema.safeParse(updateData);
+      if (!isValid.success) {
+        throw new CustomError("invalid input", 400, isValid.error);
+      }
+
+      updatedUser = await userService.updateStuffUser(
+        id,
+        updateData as TUpdateStuffInput
+      );
+      if (!updatedUser) {
+        throw new CustomError("user not updated", 500);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "user updated successfully",
+      updatedUser: updatedUser,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 async function deleteUser() {}
 
@@ -92,7 +216,7 @@ export default {
   createUser,
   getUsers,
   getUser,
-  getUserProfile,
+  getTeacherUsers,
   updateUser,
   deleteUser,
 };

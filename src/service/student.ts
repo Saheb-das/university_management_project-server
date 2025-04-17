@@ -1,0 +1,84 @@
+// internal import
+import studentRepository from "../repository/student";
+import departmentRepository from "../repository/department";
+import degreeRepository from "../repository/degree";
+import userRepository from "../repository/user";
+import { CustomError } from "../lib/error";
+
+// types import
+import { ActiveStatus, Student, User } from "@prisma/client";
+import { IStudentFilter } from "../controller/student";
+
+async function getAllStudents(
+  studentFilter: IStudentFilter
+): Promise<Student[] | null> {
+  try {
+    if (
+      studentFilter &&
+      studentFilter.deprt &&
+      studentFilter.deg &&
+      studentFilter.year
+    ) {
+      const deprt = await departmentRepository.findByIdWithFilter(
+        studentFilter.deprt!
+      );
+      if (!deprt) {
+        throw new CustomError("department not found", 404);
+      }
+
+      const degree = await degreeRepository.findByIdWithFilter(
+        studentFilter.deg!
+      );
+      if (!degree) {
+        throw new CustomError("degree not found", 404);
+      }
+
+      if (!studentFilter.year) {
+        throw new CustomError("admission year required", 400);
+      }
+    }
+
+    const students = await studentRepository.findAll(studentFilter);
+    if (!students) {
+      throw new CustomError("students not found", 404);
+    }
+
+    return students;
+  } catch (error) {
+    console.log("Error fetching students", error);
+    return null;
+  }
+}
+
+async function changeActiveStatus(
+  studentId: string,
+  activeStatus: ActiveStatus
+): Promise<User | null> {
+  try {
+    const isExist = await studentRepository.findById(studentId);
+    if (!isExist) {
+      throw new CustomError("student not found", 404);
+    }
+
+    const updatedStudent = await userRepository.update(
+      isExist.profile.user.id,
+      "activeStatus",
+      activeStatus,
+      "student"
+    );
+    if (!updatedStudent) {
+      throw new CustomError("student not updated", 500);
+    }
+
+    return updatedStudent;
+  } catch (error) {
+    console.log("Error update student's status");
+    return null;
+  }
+}
+
+// export
+export default {
+  getAllStudents,
+  changeActiveStatus,
+};

@@ -27,38 +27,22 @@ async function createDepartment(
   department: IDeprtInfo
 ): Promise<Department | null> {
   try {
-    // Check if the department already exists
-    let newDepartment: Department | null =
-      await departmentRepository.findByTypeAndCollageId(
-        department.type,
-        collageId
-      );
+    const isExist = await departmentRepository.findByTypeAndCollageId(
+      department.type,
+      collageId
+    );
+    if (isExist) {
+      throw new CustomError("department all ready exists");
+    }
+
+    const newDepartment = await departmentRepository.create(
+      collageId,
+      department
+    );
 
     if (!newDepartment) {
-      newDepartment = await departmentRepository.create(collageId, department);
-      if (!newDepartment) {
-        throw new CustomError("Department not created", 500);
-      }
+      throw new CustomError("department not created", 500);
     }
-
-    // Process degrees
-    const createdDegrees: Degree[] = [];
-    for (const degreeType of department.degree) {
-      let degree = await degreeRepository.findByTypeAndDeprtId(
-        degreeType,
-        newDepartment.id
-      );
-
-      if (!degree) {
-        degree = await degreeRepository.create(newDepartment.id, degreeType);
-        if (!degree) {
-          throw new CustomError(`Degree ${degreeType} not created`, 500);
-        }
-      }
-      createdDegrees.push(degree);
-    }
-
-    // Return department with degrees
     return newDepartment;
   } catch (error) {
     console.log("Error creating department", error);

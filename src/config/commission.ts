@@ -20,10 +20,20 @@ export const commissionConfig = [
     },
   },
   {
-    courseName: "electrical engineering",
+    courseName: "electronics & electric engineering",
     departmentType: "engineering",
     degreeType: "master",
     totalFee: 250000,
+    commission: {
+      stuff: 6,
+      recommender: 2,
+    },
+  },
+  {
+    courseName: "electronics & electric engineering",
+    departmentType: "engineering",
+    degreeType: "bachelor",
+    totalFee: 350000,
     commission: {
       stuff: 6,
       recommender: 2,

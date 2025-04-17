@@ -1,0 +1,47 @@
+// internal import
+import prisma from "../lib/prisma";
+
+// types import
+import { AsignTeacher } from "@prisma/client";
+
+export interface IAsign {
+  teacherId: string;
+  departmentId: string;
+  batchId: string;
+  semesterId: string;
+  subjectId: string;
+}
+
+async function create(payload: IAsign): Promise<AsignTeacher | null> {
+  const result = await prisma.$transaction(async (tx) => {
+    // create new asign-teacher
+    const newAsign = await tx.asignTeacher.create({
+      data: {
+        teacherId: payload.teacherId,
+        departmentId: payload.departmentId,
+        batchId: payload.batchId,
+        semesterId: payload.semesterId,
+        subjectId: payload.subjectId,
+      },
+    });
+
+    // update lecture with asign-teacher
+    const updateLecture = await tx.lecture.updateMany({
+      where: {
+        subjectId: payload.subjectId,
+      },
+      data: {
+        asignTeacherId: newAsign.id,
+      },
+    });
+
+    return newAsign;
+  });
+
+  return result;
+}
+
+// export
+export default {
+  create,
+};

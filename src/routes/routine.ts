@@ -12,6 +12,8 @@ router.post("/", routineController.createRoutine);
 
 router.get("/", routineController.getRoutines);
 
+router.get("/:batch", routineController.getRoutineByBatchName);
+
 router.get("/:id", routineController.getRoutine);
 
 router.patch("/:id", routineController.updateRoutine);

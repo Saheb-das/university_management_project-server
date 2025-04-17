@@ -45,17 +45,44 @@ async function createBatch(
   }
 }
 
+async function getBatches(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    const collageId = req.authUser.collageId;
+
+    const batches = await batchService.getAllBatches(collageId);
+    if (!batches) {
+      throw new CustomError("batches not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "batches fetch successfully",
+      batches: batches,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 interface IOptions {
   department: string;
   course: string;
 }
 
 async function getBatchByName(
-  req: AuthRequest<{ batchName: string }, {}, IOptions>,
+  req: AuthRequest<{}, { batchName: string }, IOptions>,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const { batchName } = req.body;
+  const { batchName } = req.params;
   const options = req.query;
   try {
     if (!req.authUser) {
@@ -87,8 +114,40 @@ async function getBatchByName(
   }
 }
 
+async function getBatchWithSemesters(
+  req: AuthRequest<{}, { id: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { id } = req.params;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!id) {
+      throw new CustomError("batch id required", 400);
+    }
+
+    const batchWithSemesters = await batchService.getBatchWithSemesters(id);
+    if (!batchWithSemesters) {
+      throw new CustomError("batch not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "batch fetch successfully",
+      batchSemDetails: batchWithSemesters,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // export
 export default {
   createBatch,
+  getBatches,
   getBatchByName,
+  getBatchWithSemesters,
 };

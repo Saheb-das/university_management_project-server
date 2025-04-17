@@ -4,10 +4,10 @@ import authService from "../service/auth";
 
 // types import
 import { Request, Response, NextFunction } from "express";
-import { TCollageClient } from "../zod/collage";
-import { TBankClient } from "../zod/bank";
+import { collageSchema, TCollageClient } from "../zod/collage";
+import { bankSchema, TBankClient } from "../zod/bank";
 import { loginSchema, TLoginClient } from "../zod/auth";
-import { TStuffClient } from "../zod/user";
+import { stuffSchema, TStuffClient } from "../zod/user";
 
 async function register(
   req: Request<
@@ -25,22 +25,25 @@ async function register(
   const { user, collage, collageBankDetails } = req.body;
 
   try {
-    if (!user) {
-      throw new CustomError("register user date required", 400);
+    const isValidUser = stuffSchema.safeParse(user);
+    if (!isValidUser.success) {
+      throw new CustomError("invalid user input", 400, isValidUser.error);
     }
 
-    if (!collage) {
-      throw new CustomError("register collage date required", 400);
+    const isValidCollage = collageSchema.safeParse(collage);
+    if (!isValidCollage.success) {
+      throw new CustomError("invalid user input", 400, isValidCollage.error);
     }
 
-    if (!collageBankDetails) {
-      throw new CustomError("register collage date required", 400);
+    const isValidBank = bankSchema.safeParse(collageBankDetails);
+    if (!isValidBank.success) {
+      throw new CustomError("invalid user input", 400, isValidBank.error);
     }
 
     const newUser = await authService.register(
-      user,
-      collage,
-      collageBankDetails
+      isValidUser.data,
+      isValidCollage.data,
+      isValidBank.data
     );
     if (!newUser) {
       throw new CustomError("user register failed");

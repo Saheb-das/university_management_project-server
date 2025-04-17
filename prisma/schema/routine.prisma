@@ -4,6 +4,9 @@ model Routine {
     semester   Semester @relation(references: [id], fields: [semesterId])
     semesterId String
 
+    batch   Batch  @relation(references: [id], fields: [batchId])
+    batchId String
+
     schedules Schedule[]
 
     createdAt DateTime @default(now())
@@ -36,7 +39,6 @@ model Schedule {
 
 model Lecture {
     id        String @id @default(cuid())
-    subject   String
     startTime String
     endTime   String
     room      String
@@ -44,7 +46,11 @@ model Lecture {
     schedule   Schedule @relation(references: [id], fields: [scheduleId])
     scheduleId String
 
-    asignTeacher AsignTeacher?
+    subject   Subject @relation(references: [id], fields: [subjectId])
+    subjectId String
+
+    asignTeacher   AsignTeacher? @relation(references: [id], fields: [asignTeacherId])
+    asignTeacherId String?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

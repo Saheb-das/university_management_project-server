@@ -11,7 +11,11 @@ const router = express.Router();
 // routes
 router.post("/", batchController.createBatch);
 
-router.get("/", batchController.getBatchByName);
+router.get("/", batchController.getBatches);
+
+router.get("/:batchName", batchController.getBatchByName);
+
+router.get("/:id/semesters", batchController.getBatchWithSemesters);
 
 // export
 export default router;
