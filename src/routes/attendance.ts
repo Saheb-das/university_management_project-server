@@ -13,11 +13,11 @@ router.post("/", attendanceController.createAttendance);
 
 router.get("/", attendanceController.getAttendances);
 
-router.get("/", attendanceController.getAttendance);
+router.get("/:id", attendanceController.getAttendance);
 
-router.patch("/", attendanceController.updateAttendance);
+router.patch("/:id", attendanceController.updateAttendance);
 
-router.delete("/", attendanceController.deleteAttendance);
+router.delete("/:id", attendanceController.deleteAttendance);
 
 // exoprt
 export default router;

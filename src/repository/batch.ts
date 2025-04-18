@@ -68,6 +68,16 @@ async function findByName(
   return batch;
 }
 
+async function findById(batchId: string): Promise<Batch | null> {
+  const batch = await prisma.batch.findUnique({
+    where: {
+      id: batchId,
+    },
+  });
+
+  return batch;
+}
+
 async function findByIdAndSemId(
   id: string,
   semId: string
@@ -121,6 +131,7 @@ async function findByIdWithSemesters(
 export default {
   create,
   findByName,
+  findById,
   findByIdAndSemId,
   findByIdWithSemesters,
   findAll,

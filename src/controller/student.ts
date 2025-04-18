@@ -47,6 +47,39 @@ async function getStudents(
   }
 }
 
+async function getStudentsByBatchId(
+  req: AuthRequest<{}, {}, { batch: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { batch } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!batch) {
+      throw new CustomError(
+        "batch id, semester id and subject id required",
+        400
+      );
+    }
+
+    const students = await studentService.getAllStudentsByBatchId(batch);
+    if (!students) {
+      throw new CustomError("students not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "students fetched successfully",
+      students: students,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function changeStatus(
   req: AuthRequest<{ status: ActiveStatus }, { id: string }>,
   res: Response,
@@ -87,4 +120,5 @@ async function changeStatus(
 export default {
   getStudents,
   changeStatus,
+  getStudentsByBatchId,
 };

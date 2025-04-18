@@ -30,6 +30,29 @@ async function findAll(filter: IStudentFilter): Promise<Student[] | null> {
   return students;
 }
 
+async function findAllByBatchId(batchId: string): Promise<Student[] | null> {
+  const students = await prisma.student.findMany({
+    where: {
+      batchId: batchId,
+    },
+    include: {
+      profile: {
+        select: {
+          user: {
+            select: {
+              id: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return students;
+}
+
 type StudentWithProfileUser = Prisma.StudentGetPayload<{
   include: {
     profile: {
@@ -61,4 +84,5 @@ async function findById(id: string): Promise<StudentWithProfileUser | null> {
 export default {
   findAll,
   findById,
+  findAllByBatchId,
 };

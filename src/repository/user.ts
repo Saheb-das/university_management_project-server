@@ -1,9 +1,9 @@
 // internal import
 import prisma from "../lib/prisma";
-import { RoleOpt } from "../service/user";
+import user, { RoleOpt } from "../service/user";
 
 // types import
-import { Prisma, User, UserRole } from "@prisma/client";
+import { ActiveStatus, Prisma, User, UserRole } from "@prisma/client";
 import {
   TStuffClient,
   TStuffRole,
@@ -307,6 +307,24 @@ async function updateStuff(
   return updatedResult;
 }
 
+async function updateStatus(
+  userId: string,
+  role: UserRole,
+  status: ActiveStatus
+): Promise<User | null> {
+  const updatedUser = await prisma.user.update({
+    where: {
+      id: userId,
+      role: role,
+    },
+    data: {
+      activeStatus: status,
+    },
+  });
+
+  return updatedUser;
+}
+
 // export
 export default {
   create,
@@ -317,4 +335,5 @@ export default {
   findAll,
   updateStudent,
   updateStuff,
+  updateStatus,
 };

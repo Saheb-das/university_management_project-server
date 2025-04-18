@@ -3,6 +3,7 @@ import studentRepository from "../repository/student";
 import departmentRepository from "../repository/department";
 import degreeRepository from "../repository/degree";
 import userRepository from "../repository/user";
+import batchRepository from "../repository/batch";
 import { CustomError } from "../lib/error";
 
 // types import
@@ -50,6 +51,31 @@ async function getAllStudents(
   }
 }
 
+async function getAllStudentsByBatchId(
+  batchId: string
+): Promise<Student[] | null> {
+  try {
+    if (!batchId) {
+      throw new CustomError("batch id required", 400);
+    }
+
+    const batch = await batchRepository.findById(batchId);
+    if (!batch) {
+      throw new CustomError("batch not found", 404);
+    }
+
+    const students = await studentRepository.findAllByBatchId(batch.id);
+    if (!students) {
+      throw new CustomError("students not found", 404);
+    }
+
+    return students;
+  } catch (error) {
+    console.log("Error fetching students", error);
+    return null;
+  }
+}
+
 async function changeActiveStatus(
   studentId: string,
   activeStatus: ActiveStatus
@@ -60,11 +86,10 @@ async function changeActiveStatus(
       throw new CustomError("student not found", 404);
     }
 
-    const updatedStudent = await userRepository.update(
+    const updatedStudent = await userRepository.updateStatus(
       isExist.profile.user.id,
-      "activeStatus",
-      activeStatus,
-      "student"
+      "student",
+      activeStatus
     );
     if (!updatedStudent) {
       throw new CustomError("student not updated", 500);
@@ -81,4 +106,5 @@ async function changeActiveStatus(
 export default {
   getAllStudents,
   changeActiveStatus,
+  getAllStudentsByBatchId,
 };
