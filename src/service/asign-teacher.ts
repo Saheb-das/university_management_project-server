@@ -56,7 +56,57 @@ async function asignTeacher(
   }
 }
 
+async function getAllSubjects(
+  teacherId: string
+): Promise<AsignTeacher[] | null> {
+  try {
+    const teacher = await stuffRepository.findByIdAndRole(teacherId, "teacher");
+    if (!teacher) {
+      throw new CustomError("teacher not found", 404);
+    }
+
+    const subjects = await asignTeacherRepository.findAllSubjectsByTeacherId(
+      teacher.id
+    );
+    if (!subjects) {
+      throw new CustomError("subjects not found", 404);
+    }
+
+    return subjects;
+  } catch (error) {
+    console.log("Error find asign subjects", error);
+    return null;
+  }
+}
+
+async function removeSubjectFromTeacher(
+  teacherId: string,
+  subjectId: string
+): Promise<AsignTeacher | null> {
+  try {
+    const teacher = await stuffRepository.findByIdAndRole(teacherId, "teacher");
+    if (!teacher) {
+      throw new CustomError("teacher not found", 404);
+    }
+
+    const removedSubject = await asignTeacherRepository.remove(
+      teacherId,
+      subjectId
+    );
+    if (!removedSubject) {
+      throw new CustomError("subject not removed", 500);
+    }
+
+    return removedSubject;
+  } catch (error) {
+    console.log("Error remove subject", error);
+    return null;
+  }
+}
+
 // export
 export default {
   asignTeacher,
+  getAllSubjects,
+  removeSubjectFromTeacher,
 };

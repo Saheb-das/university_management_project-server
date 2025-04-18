@@ -41,7 +41,57 @@ async function create(payload: IAsign): Promise<AsignTeacher | null> {
   return result;
 }
 
+async function findAllSubjectsByTeacherId(
+  teacherId: string
+): Promise<AsignTeacher[] | null> {
+  const subjects = await prisma.asignTeacher.findMany({
+    where: {
+      teacherId: teacherId,
+    },
+    include: {
+      subject: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  return subjects;
+}
+
+async function remove(
+  teacherId: string,
+  subjectId: string
+): Promise<AsignTeacher | null> {
+  const result = await prisma.$transaction(async (tx) => {
+    const obj = await tx.asignTeacher.findFirst({
+      where: {
+        teacherId: teacherId,
+        subjectId: subjectId,
+      },
+    });
+
+    if (!obj) {
+      return null;
+    }
+
+    const removedItem = await tx.asignTeacher.delete({
+      where: {
+        id: obj.id,
+      },
+    });
+
+    return removedItem;
+  });
+
+  return result;
+}
+
 // export
 export default {
   create,
+  findAllSubjectsByTeacherId,
+  remove,
 };

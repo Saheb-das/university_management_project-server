@@ -48,7 +48,77 @@ async function asignTeacher(
   }
 }
 
+async function getSubjects(
+  req: AuthRequest<{}, { teacherId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { teacherId } = req.params;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!teacherId) {
+      throw new CustomError("teacher stuff id required");
+    }
+
+    const subjects = await asignTeacherService.getAllSubjects(teacherId);
+    if (!subjects) {
+      throw new CustomError("subjects not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "user fetched successfully",
+      asignSubjects: subjects,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function removeSubjectFromTeacher(
+  req: AuthRequest<{}, { teacherId: string }, { subject: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { teacherId } = req.params;
+  const { subject } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!teacherId) {
+      throw new CustomError("teacher stuff id required", 400);
+    }
+
+    if (!subject) {
+      throw new CustomError("subject id required", 400);
+    }
+
+    const removedSubject = await asignTeacherService.removeSubjectFromTeacher(
+      teacherId,
+      subject
+    );
+    if (!removedSubject) {
+      throw new CustomError("subject not removed", 500);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "user fetched successfully",
+      removedSubject: removedSubject,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // export
 export default {
   asignTeacher,
+  getSubjects,
+  removeSubjectFromTeacher,
 };

@@ -10,5 +10,9 @@ const router = express.Router();
 // routes
 router.post("/:teacherId", asignTeacherController.asignTeacher);
 
+router.get("/:teacherId/subjects", asignTeacherController.getSubjects);
+
+router.delete("/:teacherId", asignTeacherController.removeSubjectFromTeacher);
+
 // export
 export default router;
