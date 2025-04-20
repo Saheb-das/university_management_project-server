@@ -13,6 +13,9 @@ model Note {
     batch   Batch  @relation(references: [id], fields: [batchId])
     batchId String
 
+    subject   Subject @relation(references: [id], fields: [subjectId])
+    subjectId String
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 }

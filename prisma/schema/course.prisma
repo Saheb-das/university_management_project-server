@@ -49,6 +49,7 @@ model Subject {
     attendances   Attendance[]
     lectures      Lecture[]
     asignTeachers AsignTeacher[]
+    notes         Note[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

@@ -127,6 +127,25 @@ async function findByIdWithSemesters(
   return batchWithSems;
 }
 
+async function findByBatchNameWithSemesters(
+  batchName: string
+): Promise<BatchWithSemesters | null> {
+  const batchWithSems = await prisma.batch.findFirst({
+    where: {
+      name: batchName,
+    },
+    include: {
+      course: {
+        select: {
+          semesters: true,
+        },
+      },
+    },
+  });
+
+  return batchWithSems;
+}
+
 // export
 export default {
   create,
@@ -135,4 +154,5 @@ export default {
   findByIdAndSemId,
   findByIdWithSemesters,
   findAll,
+  findByBatchNameWithSemesters,
 };

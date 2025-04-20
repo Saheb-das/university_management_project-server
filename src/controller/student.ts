@@ -59,10 +59,7 @@ async function getStudentsByBatchId(
     }
 
     if (!batch) {
-      throw new CustomError(
-        "batch id, semester id and subject id required",
-        400
-      );
+      throw new CustomError("batch id required", 400);
     }
 
     const students = await studentService.getAllStudentsByBatchId(batch);

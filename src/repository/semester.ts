@@ -67,9 +67,28 @@ async function findById(semId: string): Promise<Semester | null> {
   return semester;
 }
 
+async function findAllSemesterByBatchName(
+  batchName: string
+): Promise<Semester[] | null> {
+  const semesters = await prisma.semester.findMany({
+    where: {
+      course: {
+        batches: {
+          some: {
+            name: batchName,
+          },
+        },
+      },
+    },
+  });
+
+  return semesters;
+}
+
 // export
 export default {
   create,
   findAllByBatchId,
   findById,
+  findAllSemesterByBatchName,
 };
