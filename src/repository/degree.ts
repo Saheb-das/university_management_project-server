@@ -49,9 +49,20 @@ async function findByIdWithFilter(
   return degree;
 }
 
+async function findById(degreeId: string): Promise<Degree | null> {
+  const degree = await prisma.degree.findUnique({
+    where: {
+      id: degreeId,
+    },
+  });
+
+  return degree;
+}
+
 // export
 export default {
   findByTypeAndDeprtId,
   findByIdWithFilter,
   create,
+  findById,
 };

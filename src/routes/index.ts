@@ -20,6 +20,7 @@ import admisssionRoutes from "./admission";
 import studentRoutes from "./student";
 import asignTeacherRoutes from "./asign-teacher";
 import studyroomRoutes from "./studyroom";
+import examRoutes from "./exam";
 import { authenticateHTTP } from "../middleware/authenticate";
 
 // create router
@@ -37,12 +38,13 @@ router.use("/asign-teachers", authenticateHTTP, asignTeacherRoutes);
 router.use("/students", authenticateHTTP, studentRoutes);
 router.use("/routines", authenticateHTTP, routineRoutes);
 router.use("/studyrooms", authenticateHTTP, studyroomRoutes);
+router.use("/exams", authenticateHTTP, examRoutes);
 router.use("/attendances", attendanceRoutes);
 router.use("/batches", authenticateHTTP, batchRoutes);
 router.use("/notes", noteRoutes);
 router.use("/projects", projectRoutes);
 router.use("/events", eventRoutes);
-router.use("/results", resultRoutes);
+router.use("/results", authenticateHTTP, resultRoutes);
 router.use("/uploads", uploadRoutes);
 
 // export

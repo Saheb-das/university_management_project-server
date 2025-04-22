@@ -111,9 +111,29 @@ async function getNoteDoc(noteId: string): Promise<string | null> {
   }
 }
 
+async function getNotesByBatchId(batchId: string): Promise<Note[] | null> {
+  try {
+    const batch = await batchRepository.findById(batchId);
+    if (!batch) {
+      throw new CustomError("batch not found", 404);
+    }
+
+    const notes = await noteRepository.findAllByBatchId(batchId);
+    if (!notes) {
+      throw new CustomError("notes not found", 404);
+    }
+
+    return notes;
+  } catch (error) {
+    console.log("Error fetching notes", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createNote,
   getNotesByTeacherId,
   getNoteDoc,
+  getNotesByBatchId,
 };

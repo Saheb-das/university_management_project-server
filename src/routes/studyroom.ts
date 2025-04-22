@@ -15,6 +15,11 @@ router.post(
   studyroomController.createMaterial
 );
 
+router.get(
+  "/materials/batches/:batchId",
+  studyroomController.getNotesByBatchId
+);
+
 router.get("/materials/:teacherId", studyroomController.getNotesByTeacherId);
 
 router.get("/materials/:noteId/doc", studyroomController.getNoteDoc);

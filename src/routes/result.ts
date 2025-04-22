@@ -10,13 +10,12 @@ const router = express.Router();
 // routes
 router.post("/", resultController.createResult);
 
-router.get("/", resultController.getResults);
-
-router.get("/:id", resultController.getResult);
+router.get(
+  "/students/:studentId",
+  resultController.getResultByStudentIdAndExam
+);
 
 router.patch("/:id", resultController.updateResult);
-
-router.delete("/:id", resultController.deleteResult);
 
 // export
 export default router;

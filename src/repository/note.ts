@@ -66,9 +66,20 @@ async function findAllByTeacherId(teacherId: string): Promise<Note[] | null> {
   return notes;
 }
 
+async function findAllByBatchId(batchId: string): Promise<Note[] | null> {
+  const notes = await prisma.note.findMany({
+    where: {
+      batchId: batchId,
+    },
+  });
+
+  return notes;
+}
+
 // export
 export default {
   create,
   findAllByTeacherId,
   findById,
+  findAllByBatchId,
 };

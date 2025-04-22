@@ -12,6 +12,7 @@ model Course {
     Student    Student[]
     batches    Batch[]
     admissions Admission[]
+    exams      Exam[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -22,7 +23,6 @@ model Semester {
     semNo Int
 
     subjects Subject[]
-    exams    Exam[]
 
     course   Course @relation(references: [id], fields: [courseId])
     courseId String
@@ -55,18 +55,11 @@ model Subject {
     updatedAt DateTime @updatedAt
 }
 
-enum ExamType {
-    internal_1
-    internal_2
-    final
-    lab
-}
-
 model Exam {
-    id         String   @id @default(cuid())
-    type       ExamType
-    semester   Semester @relation(references: [id], fields: [semesterId])
-    semesterId String
+    id       String @id @default(cuid())
+    type     String
+    course   Course @relation(references: [id], fields: [courseId])
+    courseId String
 
     results Result[]
 
