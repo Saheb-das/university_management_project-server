@@ -13,11 +13,12 @@ model Collage {
     bankAccount   BankAccount @relation(references: [id], fields: [bankAccountId])
     bankAccountId String      @unique
 
-    departments Department[]
-    users       User[]
-    events      Event[]
-    salaries    Salary[]
-    tutionFees  TutionFee[]
+    departments   Department[]
+    users         User[]
+    events        Event[]
+    salaries      Salary[]
+    tutionFees    TutionFee[]
+    conversations Conversation[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

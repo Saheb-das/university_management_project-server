@@ -2,19 +2,19 @@
 import userRepository from "../repository/user";
 import { CustomError } from "../lib/error";
 import { genHashedPassword } from "../lib/password";
-import asignTeacherRepository, { IAsign } from "../repository/asignTeacher";
-import batchRepository from "../repository/batch";
-import semesterRepository from "../repository/semester";
-import subjectRepository from "../repository/subject";
+import conversationRespoitory from "../repository/conversation";
+import participantRepository from "../repository/participant";
 
 // types import
-import { ActiveStatus, AsignTeacher, User, UserRole } from "@prisma/client";
+import { ActiveStatus, User, UserRole } from "@prisma/client";
 import {
   TStuffClient,
   TStuffRole,
   TUpdateStudentInput,
   TUpdateStuffInput,
 } from "../zod/user";
+import { IConversation } from "../repository/conversation";
+import { IParticipant } from "../repository/participant";
 
 export interface IBaseUser {
   firstName: string;
@@ -58,6 +58,123 @@ async function createUser(
     const newUser = await userRepository.create(stuffPayload, collageId);
     if (!newUser) {
       throw new CustomError("user not created", 500);
+    }
+
+    // conversation create
+    if (newUser.role === "superadmin") {
+      const conPayload: IConversation = {
+        conName: "announcement",
+        collageId: newUser.collageId,
+      };
+
+      // announcement conversation create
+      const newAnnouncementConversation = await conversationRespoitory.create(
+        conPayload
+      );
+      if (!newAnnouncementConversation) {
+        throw new CustomError("announcement conversation not created", 500);
+      }
+    } else if (newUser.role === "admin") {
+      // find announcement conversation
+      const announceCon = await conversationRespoitory.findByNameAndCollageId({
+        conName: "announcement",
+        collageId: newUser.collageId,
+      });
+      if (!announceCon) {
+        throw new CustomError("announcement conversation not found", 404);
+      }
+
+      const participantPayload: IParticipant = {
+        role: newUser.role,
+        conId: announceCon.id,
+        userId: newUser.id,
+      };
+
+      // add user to announcement conversation
+      const addNewParticipant = await participantRepository.create(
+        participantPayload
+      );
+      if (!addNewParticipant) {
+        throw new CustomError("participant not created", 500);
+      }
+
+      const dropboxPayload: IConversation = {
+        conName: "dropbox",
+        collageId: newUser.collageId,
+      };
+
+      // create dropbox conversation
+      const newDropboxConversation = await conversationRespoitory.create(
+        dropboxPayload
+      );
+      if (!newDropboxConversation) {
+        throw new CustomError("dropbox conversation not created", 500);
+      }
+    } else if (
+      newUser.role === "accountant" ||
+      newUser.role === "counsellor" ||
+      newUser.role === "examceller" ||
+      newUser.role === "teacher"
+    ) {
+      // find announcement conversation
+      const announcementCon =
+        await conversationRespoitory.findByNameAndCollageId({
+          conName: "announcement",
+          collageId: newUser.collageId,
+        });
+      if (!announcementCon) {
+        throw new CustomError("announcement conversation not found", 404);
+      }
+
+      // find dropbox conversation
+      const dropboxCon = await conversationRespoitory.findByNameAndCollageId({
+        conName: "dropbox",
+        collageId: newUser.collageId,
+      });
+      if (!dropboxCon) {
+        throw new CustomError("dropbox conversation not found", 404);
+      }
+
+      const announcePartPayload: IParticipant = {
+        conId: announcementCon.id,
+        role: newUser.role,
+        userId: newUser.id,
+      };
+
+      // add to announcement conversation
+      const addToAnnouncement = await participantRepository.create(
+        announcePartPayload
+      );
+      if (!addToAnnouncement) {
+        throw new CustomError("announcement participant not created", 500);
+      }
+
+      const dropboxPartPayload: IParticipant = {
+        conId: dropboxCon.id,
+        role: newUser.role,
+        userId: newUser.id,
+      };
+
+      // add to dropbox conversation
+      const addToDropbox = await participantRepository.create(
+        dropboxPartPayload
+      );
+      if (!addToDropbox) {
+        throw new CustomError("dropbox participant not created", 500);
+      }
+
+      const roleComPayload: IConversation = {
+        conName: `${newUser.role} community`,
+        collageId: newUser.collageId,
+      };
+
+      // create role based community
+      const newRoledCommunity = await conversationRespoitory.create(
+        roleComPayload
+      );
+      if (!newRoledCommunity) {
+        throw new CustomError("community not created", 500);
+      }
     }
 
     return newUser;

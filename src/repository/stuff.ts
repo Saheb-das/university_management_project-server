@@ -2,7 +2,7 @@
 import prisma from "../lib/prisma";
 
 // types import
-import { Stuff, UserRole } from "@prisma/client";
+import { Prisma, Stuff, UserRole } from "@prisma/client";
 
 async function findByUserId(userId: string): Promise<Stuff | null> {
   const stuff = await prisma.stuff.findFirst({
@@ -26,16 +26,32 @@ async function findById(stuffId: string): Promise<Stuff | null> {
   return stuff;
 }
 
+type StuffWithUserId = Prisma.StuffGetPayload<{
+  include: {
+    profile: {
+      select: {
+        userId: true;
+      };
+    };
+  };
+}>;
 async function findByIdAndRole(
   stuffId: string,
   role: UserRole
-): Promise<Stuff | null> {
+): Promise<StuffWithUserId | null> {
   const stuff = await prisma.stuff.findUnique({
     where: {
       id: stuffId,
       profile: {
         user: {
           role: role,
+        },
+      },
+    },
+    include: {
+      profile: {
+        select: {
+          userId: true,
         },
       },
     },

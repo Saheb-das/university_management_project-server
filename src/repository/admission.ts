@@ -2,11 +2,25 @@
 import prisma from "../lib/prisma";
 
 // types import
-import { Admission } from "@prisma/client";
+import { Admission, Prisma } from "@prisma/client";
 import { IIds } from "../service/admission";
 import { TStudentClient } from "../zod/user";
 
 export type TAdmission = Omit<Admission, "createdAt" | "updatedAt" | "id">;
+
+type AdmissionWithUser = Prisma.AdmissionGetPayload<{
+  include: {
+    student: {
+      select: {
+        profile: {
+          select: {
+            userId: true;
+          };
+        };
+      };
+    };
+  };
+}>;
 
 async function create(
   payload: TStudentClient,
@@ -14,7 +28,7 @@ async function create(
   idsPayload: IIds,
   userId: string,
   commissionIncome: string
-): Promise<Admission | null> {
+): Promise<AdmissionWithUser | null> {
   const result = await prisma.$transaction(async (tx) => {
     // create user
     const newUser = await tx.user.create({
@@ -55,8 +69,6 @@ async function create(
       },
     });
 
-    console.log("commisonInc: ", commissionIncome);
-
     // create admission
     const newAdmission = await tx.admission.create({
       data: {
@@ -67,6 +79,17 @@ async function create(
         studentId: newStudent.id,
         degreeId: idsPayload.degreeId,
         counsellorId: userId,
+      },
+      include: {
+        student: {
+          select: {
+            profile: {
+              select: {
+                userId: true,
+              },
+            },
+          },
+        },
       },
     });
 

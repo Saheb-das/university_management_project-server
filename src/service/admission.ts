@@ -6,6 +6,8 @@ import batchRepository from "../repository/batch";
 import { calcCommission } from "../utils/commission";
 import { genHashedPassword } from "../lib/password";
 import degreeRepository from "../repository/degree";
+import conversationRepository from "../repository/conversation";
+import participantRepository from "../repository/participant";
 
 // types import
 import { Admission } from "@prisma/client";
@@ -63,7 +65,6 @@ async function createAdmission(
       departmentType: isExistBatch.department.type,
       role: "stuff",
     });
-    console.log("comInc", commissionIncome);
 
     const studentPayload: TStudentClient = {
       firstName: payload.firstName,
@@ -99,6 +100,54 @@ async function createAdmission(
     );
     if (!newAdmission) {
       throw new CustomError("student not created", 500);
+    }
+
+    // join classgroup and other conversation
+
+    // find announcement conversation
+    const announcementCon = await conversationRepository.findByNameAndCollageId(
+      { conName: "announcement", collageId: collageId }
+    );
+    if (!announcementCon) {
+      throw new CustomError("announcement conversation not found", 404);
+    }
+
+    // find dropbox conversation
+    const dropboxCon = await conversationRepository.findByNameAndCollageId({
+      conName: "dropbox",
+      collageId: collageId,
+    });
+    if (!dropboxCon) {
+      throw new CustomError("dropbox conversation not found", 404);
+    }
+
+    // add to announcement conversation
+    const addToAnnouncement = await participantRepository.create({
+      conId: announcementCon.id,
+      role: payload.role,
+      userId: newAdmission.student.profile.userId,
+    });
+    if (!addToAnnouncement) {
+      throw new CustomError("announcement participant not created", 500);
+    }
+
+    // add to dropbox conversation
+    const addToDropbox = await participantRepository.create({
+      conId: dropboxCon.id,
+      role: payload.role,
+      userId: newAdmission.student.profile.userId,
+    });
+    if (!addToDropbox) {
+      throw new CustomError("dropbox participant not created", 500);
+    }
+
+    // create classgroup conversation
+    const classgroupCon = await conversationRepository.create({
+      conName: `classgroup ${isExistBatch.name}`,
+      collageId: collageId,
+    });
+    if (!classgroupCon) {
+      throw new CustomError("classgroup conversation not created", 500);
     }
 
     return newAdmission;

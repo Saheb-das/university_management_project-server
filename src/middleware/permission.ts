@@ -5,6 +5,7 @@ import { Permissions } from "../model/permission";
 import { NextFunction, Response, RequestHandler } from "express";
 import { AuthRequest, TRole } from "../types/auth";
 import { CustomError } from "../lib/error";
+import { Socket } from "socket.io";
 
 // check permission by roles
 export function checkPermission(requiredPermission: string): RequestHandler {
@@ -25,5 +26,12 @@ export function checkPermission(requiredPermission: string): RequestHandler {
     } catch (error) {
       next(error);
     }
+  };
+}
+
+export function authorizeSocket(allowedRoles: TRole[]) {
+  return (socket: Socket): boolean => {
+    const role = socket.data.authUser?.role;
+    return allowedRoles.includes(role);
   };
 }

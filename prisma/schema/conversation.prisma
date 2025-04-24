@@ -2,6 +2,9 @@ model Conversation {
     id   String @id @default(cuid())
     name String
 
+    collage   Collage @relation(references: [id], fields: [collageId])
+    collageId String
+
     participants Participant[]
     messages     Message[]
 

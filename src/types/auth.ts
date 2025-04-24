@@ -1,5 +1,6 @@
 // types import
 import { Request } from "express";
+import "socket.io";
 
 export type TRole =
   | "superadmin"
@@ -19,4 +20,17 @@ export interface AuthRequest<ReqBody = {}, Params = {}, Query = {}>
     email: string;
     collageId: string;
   };
+}
+
+declare module "socket.io" {
+  interface SocketData {
+    data: {
+      authUser?: {
+        id: string;
+        role: TRole;
+        email: string;
+        collageId: string;
+      };
+    };
+  }
 }

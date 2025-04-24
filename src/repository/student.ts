@@ -80,9 +80,40 @@ async function findById(id: string): Promise<StudentWithProfileUser | null> {
   return student;
 }
 
+export type StudentWithBatch = Prisma.StudentGetPayload<{
+  include: {
+    batch: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
+  };
+}>;
+async function findByUserId(userId: string): Promise<StudentWithBatch | null> {
+  const student = await prisma.student.findFirst({
+    where: {
+      profile: {
+        userId: userId,
+      },
+    },
+    include: {
+      batch: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  return student;
+}
+
 // export
 export default {
   findAll,
   findById,
   findAllByBatchId,
+  findByUserId,
 };

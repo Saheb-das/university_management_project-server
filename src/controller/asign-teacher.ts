@@ -24,6 +24,8 @@ async function asignTeacher(
       throw new CustomError("unauthorized user", 401);
     }
 
+    const collageId = req.authUser.collageId;
+
     if (!batchName || !semester || !subject) {
       throw new CustomError("invalid input");
     }
@@ -32,7 +34,8 @@ async function asignTeacher(
 
     const asignTeacher = await asignTeacherService.asignTeacher(
       teacherId,
-      asignData
+      asignData,
+      collageId
     );
     if (!asignTeacher) {
       throw new CustomError("teacher not asigned", 500);
@@ -90,6 +93,8 @@ async function removeSubjectFromTeacher(
       throw new CustomError("unauthorized user", 401);
     }
 
+    const collageId = req.authUser.collageId;
+
     if (!teacherId) {
       throw new CustomError("teacher stuff id required", 400);
     }
@@ -100,7 +105,8 @@ async function removeSubjectFromTeacher(
 
     const removedSubject = await asignTeacherService.removeSubjectFromTeacher(
       teacherId,
-      subject
+      subject,
+      collageId
     );
     if (!removedSubject) {
       throw new CustomError("subject not removed", 500);

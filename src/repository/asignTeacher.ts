@@ -2,7 +2,7 @@
 import prisma from "../lib/prisma";
 
 // types import
-import { AsignTeacher } from "@prisma/client";
+import { AsignTeacher, Prisma } from "@prisma/client";
 
 export interface IAsign {
   teacherId: string;
@@ -61,10 +61,50 @@ async function findAllSubjectsByTeacherId(
   return subjects;
 }
 
+type AsignTeacherWithBatch = Prisma.AsignTeacherGetPayload<{
+  include: {
+    batch: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
+  };
+}>;
+
+async function findAllByTeacherId(
+  teacherId: string
+): Promise<AsignTeacherWithBatch[] | null> {
+  const asignedTeachers = await prisma.asignTeacher.findMany({
+    where: {
+      teacherId: teacherId,
+    },
+    include: {
+      batch: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  return asignedTeachers;
+}
+
+type RemovedAsignTeacher = Prisma.AsignTeacherGetPayload<{
+  include: {
+    batch: {
+      select: {
+        name: true;
+      };
+    };
+  };
+}>;
 async function remove(
   teacherId: string,
   subjectId: string
-): Promise<AsignTeacher | null> {
+): Promise<RemovedAsignTeacher | null> {
   const result = await prisma.$transaction(async (tx) => {
     const obj = await tx.asignTeacher.findFirst({
       where: {
@@ -81,6 +121,13 @@ async function remove(
       where: {
         id: obj.id,
       },
+      include: {
+        batch: {
+          select: {
+            name: true,
+          },
+        },
+      },
     });
 
     return removedItem;
@@ -93,5 +140,6 @@ async function remove(
 export default {
   create,
   findAllSubjectsByTeacherId,
+  findAllByTeacherId,
   remove,
 };

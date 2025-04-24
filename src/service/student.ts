@@ -1,5 +1,5 @@
 // internal import
-import studentRepository from "../repository/student";
+import studentRepository, { StudentWithBatch } from "../repository/student";
 import departmentRepository from "../repository/department";
 import degreeRepository from "../repository/degree";
 import userRepository from "../repository/user";
@@ -102,9 +102,30 @@ async function changeActiveStatus(
   }
 }
 
+async function getStudentByUserId(
+  userId: string
+): Promise<StudentWithBatch | null> {
+  try {
+    if (!userId) {
+      throw new CustomError("user id required", 400);
+    }
+
+    const student = await studentRepository.findByUserId(userId);
+    if (!student) {
+      throw new CustomError("student not found", 404);
+    }
+
+    return student;
+  } catch (error) {
+    console.log("Error fetching student", error);
+    return null;
+  }
+}
+
 // export
 export default {
   getAllStudents,
   changeActiveStatus,
   getAllStudentsByBatchId,
+  getStudentByUserId,
 };
