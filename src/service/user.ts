@@ -164,7 +164,7 @@ async function createUser(
       }
 
       const roleComPayload: IConversation = {
-        conName: `${newUser.role} community`,
+        conName: `community ${newUser.role}`,
         collageId: newUser.collageId,
       };
 

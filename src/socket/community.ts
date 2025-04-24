@@ -1,9 +1,14 @@
 // internal import
 import { authenticateSocket } from "../middleware/authenticate";
+import conversationService from "../service/conversation";
+import { CustomError } from "../lib/error";
+import messageService from "../service/message";
 
 // types import
 import { Namespace } from "socket.io";
 import { authorizeSocket } from "../middleware/permission";
+import { IMsg } from "../types/conversation";
+import { IMessage } from "../repository/message";
 
 export function communityNamespace(communityChat: Namespace) {
   communityChat.use(authenticateSocket);
@@ -26,18 +31,43 @@ export function communityNamespace(communityChat: Namespace) {
       return;
     }
 
-    // Step 3: Join collegeId room
+    // Join collegeId room
     const roleBasedRoom = `college_${user.collageId}_${user.role}`;
     socket.join(roleBasedRoom);
     console.log(`${user.email} joined college room: ${roleBasedRoom}`);
 
-    // Step 4: Listen for announcements
-    socket.on("send_community", (message) => {
-      // Step 5: Emit only to same-college users
-      communityChat.to(roleBasedRoom).emit("new_community", {
-        user,
-        message,
-      });
+    // Listen for announcements
+    socket.on("send_community", async (data: IMsg) => {
+      try {
+        const conversation = await conversationService.getConByNameAndCollageId(
+          {
+            collageId: user.collageId,
+            conName: `community ${user.role}`,
+          }
+        );
+        if (!conversation) {
+          throw new CustomError("conversation not found", 404);
+        }
+
+        if (conversation.id !== data.conId) {
+          throw new CustomError("invalid conversation id", 400);
+        }
+
+        const msgPayload: IMessage = {
+          content: data.content,
+          userId: user.id,
+          conId: conversation.id,
+        };
+
+        // create new message
+        const updateMsg = await messageService.createMessage(msgPayload);
+
+        // Emit only to same-college users
+        communityChat.to(roleBasedRoom).emit("new_community", updateMsg);
+      } catch (error: any) {
+        console.error("Error:", error.message); // ✅ Safe access
+        socket.emit("error_occurred", { message: error.message });
+      }
     });
   });
 }

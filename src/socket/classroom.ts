@@ -4,9 +4,13 @@ import studentService from "../service/student";
 import asignTeacherService from "../service/asign-teacher";
 import { authorizeSocket } from "../middleware/permission";
 import { CustomError } from "../lib/error";
+import messageService from "../service/message";
+import conversationService from "../service/conversation";
 
 // types import
 import { Namespace } from "socket.io";
+import { IMsg } from "../types/conversation";
+import { IMessage } from "../repository/message";
 
 export function classroomNamespace(classroomChat: Namespace) {
   classroomChat.use(authenticateSocket);
@@ -33,12 +37,38 @@ export function classroomNamespace(classroomChat: Namespace) {
         console.log(`${user.email} joined college room: ${batchRoom}`);
 
         // Listen for message
-        socket.on("send_classroom", (message) => {
-          // Emit only to same-college users
-          classroomChat.to(batchRoom).emit("new_classroom", {
-            user,
-            message,
-          });
+        socket.on("send_classroom", async (data: IMsg) => {
+          try {
+            // get conversation
+            const conversation =
+              await conversationService.getConByNameAndCollageId({
+                collageId: user.collageId,
+                conName: `classgroup ${student.batch.name}`,
+              });
+
+            if (!conversation) {
+              throw new CustomError("conversation not found", 404);
+            }
+
+            if (conversation.id !== data.conId) {
+              throw new CustomError("invalid conversation id", 400);
+            }
+
+            const msgPayload: IMessage = {
+              content: data.content,
+              userId: user.id,
+              conId: conversation.id,
+            };
+
+            // create new message
+            const updateMsg = await messageService.createMessage(msgPayload);
+
+            // Emit only to same-college users
+            classroomChat.to(batchRoom).emit("new_classroom", updateMsg);
+          } catch (err: any) {
+            console.error("Socket error:", err.message);
+            socket.emit("error_occurred", { message: err.message });
+          }
         });
       } else if (user.role === "teacher") {
         const teacherBatches =
@@ -59,14 +89,45 @@ export function classroomNamespace(classroomChat: Namespace) {
         });
 
         // ✅ Listen for messages and broadcast to all joined rooms
-        socket.on("send_classroom", (message) => {
-          teacherBatches.forEach((batch) => {
-            const batchRoom = `college_${user.collageId}_${user.role}_${batch}`;
-            classroomChat.to(batchRoom).emit("new_classroom", {
-              user,
-              message,
-            });
-          });
+        socket.on("send_classroom", async (data: IMsg) => {
+          try {
+            const conversation = await conversationService.getConById(
+              data.conId
+            );
+            if (!conversation) {
+              throw new CustomError("conversation not found", 404);
+            }
+
+            // Extract batch name from conversation name
+            const batchName = conversation.name
+              .replace("classgroup ", "")
+              .trim();
+
+            // Ensure teacher is assigned to that batch
+            const isAssigned = teacherBatches.some(
+              (batch) => batch === batchName
+            );
+            if (!isAssigned) {
+              throw new CustomError("You are not assigned to this batch", 403);
+            }
+
+            // Create the message
+            const msgPayload: IMessage = {
+              content: data.content,
+              userId: user.id,
+              conId: conversation.id,
+            };
+
+            const updateMsg = await messageService.createMessage(msgPayload);
+
+            // Emit message to the specific batch room
+            const batchRoom = `college_${user.collageId}_${user.role}_${batchName}`;
+
+            classroomChat.to(batchRoom).emit("new_classroom", updateMsg);
+          } catch (err: any) {
+            console.error("Socket error:", err.message);
+            socket.emit("error_occurred", { message: err.message });
+          }
         });
       }
     } catch (error: any) {

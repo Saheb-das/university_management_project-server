@@ -33,8 +33,19 @@ async function findByNameAndCollageId(
   return con;
 }
 
+async function findById(conId: string): Promise<Conversation | null> {
+  const con = await prisma.conversation.findUnique({
+    where: {
+      id: conId,
+    },
+  });
+
+  return con;
+}
+
 // export
 export default {
   create,
   findByNameAndCollageId,
+  findById,
 };
