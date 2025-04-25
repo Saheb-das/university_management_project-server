@@ -1,7 +1,6 @@
 // external import
 import multer from "multer";
 import fs from "fs";
-import path from "path";
 
 // internal import
 import { CustomError } from "../lib/error";
@@ -10,6 +9,7 @@ import { CustomError } from "../lib/error";
 import { Request } from "express";
 import { AuthRequest } from "../types";
 import { IMaterialQuery } from "../controller/studyroom";
+import { getFileName } from "../lib/fileName";
 
 const storage = multer.diskStorage({
   destination: function (req: Request, file: Express.Multer.File, cb) {
@@ -19,6 +19,10 @@ const storage = multer.diskStorage({
       uploadPath = "uploads/profile-pictures";
     } else if (file.fieldname === "document") {
       uploadPath = "uploads/documents";
+    } else if (file.fieldname === "project") {
+      uploadPath = "uploads/project";
+    } else if (file.fieldname === "event") {
+      uploadPath = "uploads/event";
     } else {
       uploadPath = "uploads/others";
     }
@@ -30,26 +34,14 @@ const storage = multer.diskStorage({
   },
   filename: function (req: Request, file, cb) {
     try {
-      const ext = path.extname(file.originalname);
-      const authReq = req as unknown as AuthRequest<
-        { title: string },
-        {},
-        IMaterialQuery
-      >;
-      const { batch, sub, sem } = req.query;
-      let fileName = "";
+      const authReq = req as unknown as AuthRequest<{}, {}, IMaterialQuery>;
 
       if (!authReq.authUser) {
         throw new CustomError("unauthorized user", 401);
       }
 
-      if (file.fieldname === "profilePic") {
-        fileName = `${authReq.authUser.role}_${authReq.authUser.id}${ext}`;
-      } else if (file.fieldname === "document") {
-        fileName = `${batch}_${sem}_${sub}`;
-      } else {
-        fileName = `${new Date()}`;
-      }
+      const fileName = getFileName(file, authReq.authUser, req.query);
+      console.log("fileName", fileName);
 
       cb(null, fileName);
     } catch (error) {

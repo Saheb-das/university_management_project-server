@@ -3,20 +3,21 @@ import express from "express";
 
 // internal import
 import projectController from "../controller/project";
+import { upload } from "../multer";
 
 // create router
 const router = express.Router();
 
 // routes
-router.post("/", projectController.createProject);
+router.post("/", upload.single("project"), projectController.createProject);
 
 router.get("/", projectController.getProjects);
 
-router.get("/", projectController.getProject);
+router.get("/:id", projectController.getProject);
 
-router.post("/", projectController.updateProject);
+router.post("/:id", projectController.updateProject);
 
-router.post("/", projectController.deleteProject);
+router.post("/:id", projectController.deleteProject);
 
 // export
 export default router;

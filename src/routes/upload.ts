@@ -1,22 +1,53 @@
-// external import
+// external imoprt
 import express from "express";
 
 // internal import
 import uploadController from "../controller/upload";
+import { upload } from "../multer";
 
 // create router
 const router = express.Router();
 
 // routes
-router.post("/", uploadController.createUpload);
+router.post(
+  "/profile-pic",
+  upload.single("profilePic"),
+  uploadController.createNewUpload
+);
 
-router.get("/", uploadController.getUploads);
+router.post(
+  "/document",
+  upload.single("document"),
+  uploadController.createNewUpload
+);
 
-router.get("/:id", uploadController.getUploads);
+router.post(
+  "/project",
+  upload.single("project"),
+  uploadController.createNewUpload
+);
 
-router.patch("/:id", uploadController.updateUpload);
+router.post("/event", upload.single("event"), uploadController.createNewUpload);
 
-router.delete("/:id", uploadController.deleteUpload);
+router.patch(
+  "/profile-pic",
+  upload.single("profilePic"),
+  uploadController.changeUpload
+);
+
+router.patch(
+  "/document",
+  upload.single("document"),
+  uploadController.changeUpload
+);
+
+router.patch(
+  "/project",
+  upload.single("project"),
+  uploadController.changeUpload
+);
+
+router.patch("/event", upload.single("event"), uploadController.changeUpload);
 
 // export
 export default router;

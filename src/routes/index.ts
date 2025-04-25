@@ -45,7 +45,7 @@ router.use("/notes", noteRoutes);
 router.use("/projects", projectRoutes);
 router.use("/events", eventRoutes);
 router.use("/results", authenticateHTTP, resultRoutes);
-router.use("/uploads", uploadRoutes);
+router.use("/uploads", authenticateHTTP, uploadRoutes);
 
 // export
 export default router;
