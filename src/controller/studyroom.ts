@@ -4,7 +4,7 @@ import path from "path";
 
 // internal import
 import { CustomError } from "../lib/error";
-import noteService, { IFileDetails } from "../service/note";
+import noteService from "../service/note";
 
 // types import
 import { Response, NextFunction } from "express";
@@ -17,20 +17,16 @@ export interface IMaterialQuery extends ParsedQs {
 }
 
 async function createMaterial(
-  req: AuthRequest<{ title: string }, {}, IMaterialQuery>,
+  req: AuthRequest<{ title: string; filePath: string }, {}, IMaterialQuery>,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const { title } = req.body;
+  const { title, filePath } = req.body;
   const { batch, sem, sub } = req.query;
 
   try {
     if (!req.authUser) {
       throw new CustomError("unauthorized user", 401);
-    }
-
-    if (!req.file) {
-      throw new CustomError("invalid request field", 500);
     }
 
     if (!title) {
@@ -43,15 +39,10 @@ async function createMaterial(
 
     const userId = req.authUser.id;
 
-    const fileDetails: IFileDetails = {
-      name: req.file.filename,
-      path: req.file.destination,
-    };
-
     const newNote = await noteService.createNote(
       userId,
       title,
-      fileDetails,
+      filePath,
       req.query
     );
     if (!newNote) {

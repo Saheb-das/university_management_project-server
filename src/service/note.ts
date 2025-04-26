@@ -10,15 +10,10 @@ import { Note } from "@prisma/client";
 import { IMaterialQuery } from "../controller/studyroom";
 import { INote } from "../repository/note";
 
-export interface IFileDetails {
-  name: string;
-  path: string;
-}
-
 async function createNote(
   userId: string,
   title: string,
-  file: IFileDetails,
+  filePath: string,
   params: IMaterialQuery
 ): Promise<Note | null> {
   try {
@@ -60,7 +55,7 @@ async function createNote(
     const notePayload: INote = {
       title: title,
       batchId: batchWithSem.id,
-      fileUrl: `${file.path}/${file.name}`,
+      fileUrl: filePath,
       semesterId: semester.id,
       teacherId: stuff.id,
       subjectId: subject.id,

@@ -9,7 +9,7 @@ import { upload } from "../multer";
 const router = express.Router();
 
 // routes
-router.post("/", upload.single("project"), projectController.createProject);
+router.post("/", projectController.createProject);
 
 router.get("/", projectController.getProjects);
 
