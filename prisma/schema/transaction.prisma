@@ -4,6 +4,7 @@ enum TransactionType {
 }
 
 enum TransactionMode {
+    in_app
     online
     banking
     cash
@@ -14,16 +15,28 @@ model Transaction {
     type     TransactionType
     userRole UserRole
     amount   String
+    currency String
     date     String
     time     String
     mode     TransactionMode
     utr      String
 
+    razorpay  RazorpayTransaction?
     salary    Salary?
     tutionFee TutionFee?
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+model RazorpayTransaction {
+    id                String @id @default(cuid())
+    razorpayOrderId   String
+    razorpayPaymentId String
+    razorpaySignature String
+
+    transaction   Transaction @relation(fields: [transactionId], references: [id])
+    transactionId String      @unique
 }
 
 enum Month {

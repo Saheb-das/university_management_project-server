@@ -27,5 +27,9 @@ router.patch("/:id", transactionController.updateTransaction);
 
 router.delete("/:id", transactionController.deleteTransaction);
 
+router.post("/create-order", transactionController.createPaymentOrder);
+
+router.post("/verify-payment", transactionController.verifyPaymentOrder);
+
 // export
 export default router;

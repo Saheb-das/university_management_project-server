@@ -10,6 +10,7 @@ const TransactionMode = z.nativeEnum({
   online: "online",
   banking: "banking",
   cash: "cash",
+  inapp: "inapp",
 });
 
 const Month = z.nativeEnum({
@@ -35,7 +36,7 @@ const SalarySchema = z.object({
   totalAmount: z.string().min(1, "Total amount is required"),
 });
 
-type TSalaryClient = z.infer<typeof SalarySchema>;
+export type TSalaryClient = z.infer<typeof SalarySchema>;
 
 // Tuition Fee Schema
 const TutionFeeSchema = z.object({
@@ -45,7 +46,7 @@ const TutionFeeSchema = z.object({
   totalAmount: z.string().min(1, "Total amount required"),
 });
 
-type TTutionFeeClient = z.infer<typeof TutionFeeSchema>;
+export type TTutionFeeClient = z.infer<typeof TutionFeeSchema>;
 
 // Transaction Schema
 export const transactionSchema = z.object({
@@ -63,3 +64,14 @@ export const transactionSchema = z.object({
 });
 
 export type TTransactionClient = z.infer<typeof transactionSchema>;
+
+export const verifyOrderSchema = z.object({
+  razorpay_order_id: z.string(),
+  razorpay_payment_id: z.string(),
+  razorpay_signature: z.string(),
+  amount: z.string(),
+  currency: z.string(),
+});
+
+// Type inference (optional)
+export type TVerifyOrderClient = z.infer<typeof verifyOrderSchema>;

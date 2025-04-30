@@ -27,4 +27,5 @@ export interface ITransaction {
   time: string;
   mode: string;
   utr: string;
+  currency: string;
 }
