@@ -15,7 +15,7 @@ async function create(transInfo: ITransaction): Promise<Transaction | null> {
       mode: transInfo.mode as TransactionMode,
       type: transInfo.type as TransactionType,
       time: transInfo.time,
-      userRole: transInfo.amount as UserRole,
+      userRole: transInfo.userRole as UserRole,
       utr: transInfo.utr,
       currency: transInfo.currency,
     },

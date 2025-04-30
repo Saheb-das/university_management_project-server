@@ -65,6 +65,19 @@ export const transactionSchema = z.object({
 
 export type TTransactionClient = z.infer<typeof transactionSchema>;
 
+export const transWithVerifySchema = z.object({
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date format (YYYY-MM-DD)"),
+  time: z.string().regex(/^\d{2}:\d{2}$/, "Invalid time format (HH:MM)"),
+  mode: TransactionMode,
+  type: TransactionType,
+  userRole: z.string(),
+  salary: SalarySchema.optional(),
+  tutionFee: TutionFeeSchema.optional(),
+});
+export type TTransWithVerify = z.infer<typeof transWithVerifySchema>;
+
 export const verifyOrderSchema = z.object({
   razorpay_order_id: z.string(),
   razorpay_payment_id: z.string(),
@@ -72,6 +85,12 @@ export const verifyOrderSchema = z.object({
   amount: z.string(),
   currency: z.string(),
 });
+export type TVerifyOrderClient = z.infer<typeof verifyOrderSchema>;
+
+const verifySchema = z.object({
+  transaction: transWithVerifySchema,
+  verifyInfo: verifyOrderSchema,
+});
 
 // Type inference (optional)
-export type TVerifyOrderClient = z.infer<typeof verifyOrderSchema>;
+export type TVerifyClient = z.infer<typeof verifySchema>;

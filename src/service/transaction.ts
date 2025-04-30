@@ -10,17 +10,18 @@ import stuffRepository from "../repository/stuff";
 import studentRepository from "../repository/student";
 import razorpayRepository from "../repository/razorpay";
 import { razorpay } from "../razorpay/index";
+import { CustomError } from "../lib/error";
 
 // types import
-import { Salary, Transaction, TutionFee } from "@prisma/client";
+import { Salary, Transaction, TutionFee, UserRole } from "@prisma/client";
 import {
   TSalaryClient,
   TTransactionClient,
+  TTransWithVerify,
   TTutionFeeClient,
   TVerifyOrderClient,
 } from "../zod/transaction";
 import { ISalary, ITransaction, ITutionFee } from "../types/transaction";
-import { CustomError } from "../lib/error";
 import { Orders } from "razorpay/dist/types/orders";
 import { TRole } from "../types";
 
@@ -40,17 +41,18 @@ async function createTransaction(
       mode: transInfo.mode,
       time: transInfo.time,
       type: transInfo.type,
-      userRole: transInfo.userRole,
+      userRole: transInfo.userRole as UserRole,
       utr: transInfo.utr,
       currency: "INR",
     };
+
     const newTrans = await transactionRepository.create(transPayload);
     if (!newTrans) {
       throw new CustomError("transaction not created", 500);
     }
 
-    const collageBank = await collageRepository.findById(collageId);
-    if (!collageBank) {
+    const collage = await collageRepository.findById(collageId);
+    if (!collage) {
       throw new CustomError("collage not found", 404);
     }
 
@@ -58,7 +60,7 @@ async function createTransaction(
       const newSalary = await createSalaryTrans(
         stuffId,
         transInfo.salary,
-        collageBank.bankAccountId,
+        collage.id,
         newTrans.id
       );
       if (!newSalary) {
@@ -70,7 +72,7 @@ async function createTransaction(
       const newTutionFee = await createTutionTrans(
         studentId,
         transInfo.tutionFee,
-        collageBank.bankAccountId,
+        collage.id,
         newTrans.id
       );
       if (!newTutionFee) {
@@ -138,16 +140,15 @@ async function createPaymentOrder(
     if (!amount) {
       throw new CustomError("amount required", 400);
     }
-    console.log("amount", amount);
 
     // order option
     const option = {
       amount: amount,
       currency: "INR",
-      receipt: `${user.collage}_${user.userRole}_${user.userId}_${new Date()}`,
+      receipt: `${user.userRole}_${Date.now()}`,
     };
 
-    const order = razorpay.orders.create(option);
+    const order = await razorpay.orders.create(option);
     if (!order) {
       throw new CustomError("order not created", 500);
     }
@@ -161,7 +162,7 @@ async function createPaymentOrder(
 
 async function verifyPaymentOrderAndCreate(
   verifyInfo: TVerifyOrderClient,
-  transInfo: TTransactionClient,
+  transInfo: TTransWithVerify,
   collageId: string,
   stuffId: string = "",
   studentId: string
@@ -181,14 +182,14 @@ async function verifyPaymentOrderAndCreate(
     }
 
     const transactionPayload: ITransaction = {
-      amount: transInfo.amount,
+      amount: verifyInfo.amount,
       date: transInfo.date,
       mode: "in_app",
       time: transInfo.time,
       type: transInfo.type,
       userRole: transInfo.userRole,
-      utr: transInfo.utr,
-      currency: "INR",
+      utr: verifyInfo.razorpay_payment_id,
+      currency: verifyInfo.currency,
     };
     const newTrans = await transactionRepository.create(transactionPayload);
     if (!newTrans) {
@@ -267,7 +268,7 @@ async function verifyPaymentOrder(
 async function createTutionTrans(
   studentId: string,
   feeInfo: TTutionFeeClient,
-  collageBankId: string,
+  collageId: string,
   transId: string
 ): Promise<TutionFee | null> {
   if (!studentId) {
@@ -286,7 +287,7 @@ async function createTutionTrans(
     totalAmount: feeInfo.totalAmount,
     isVerified: false,
     senderId: studentId,
-    recieverId: collageBankId,
+    recieverId: collageId,
     transactionId: transId,
   };
   const newTutionFee = await tutionFeeRepository.create(tutionFeePayload);
@@ -300,7 +301,7 @@ async function createTutionTrans(
 async function createSalaryTrans(
   stuffId: string,
   salaryInfo: TSalaryClient,
-  collageBankId: string,
+  collageId: string,
   transId: string
 ): Promise<Salary | null> {
   if (!stuffId) {
@@ -318,7 +319,7 @@ async function createSalaryTrans(
     salaryAmount: salaryInfo.salaryAmount,
     totalAmount: salaryInfo.totalAmount,
     recieverId: stuffId,
-    senderId: collageBankId,
+    senderId: collageId,
     transactionId: transId,
   };
   const newSalary = await salaryRepository.create(salaryPayload);

@@ -7,8 +7,9 @@ import { AuthRequest } from "../types";
 import { CustomError } from "../lib/error";
 import {
   transactionSchema,
+  transWithVerifySchema,
   TTransactionClient,
-  TVerifyOrderClient,
+  TVerifyClient,
   verifyOrderSchema,
 } from "../zod/transaction";
 
@@ -112,9 +113,6 @@ async function getTransaction(
   }
 }
 
-async function updateTransaction() {}
-async function deleteTransaction() {}
-
 async function createPaymentOrder(
   req: AuthRequest<{ amount: string }>,
   res: Response,
@@ -154,17 +152,12 @@ async function createPaymentOrder(
   }
 }
 
-interface IVerifyOrder {
-  transaction: TTransactionClient;
-  verifiedInfo: TVerifyOrderClient;
-}
-
 async function verifyPaymentOrder(
-  req: AuthRequest<IVerifyOrder, {}, { student: string; stuff: string }>,
+  req: AuthRequest<TVerifyClient, {}, { student: string; stuff: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const { transaction, verifiedInfo } = req.body;
+  const { transaction, verifyInfo } = req.body;
   const { student, stuff } = req.query;
   try {
     if (!req.authUser) {
@@ -177,7 +170,7 @@ async function verifyPaymentOrder(
 
     const collageId = req.authUser.collageId;
 
-    const isValidTrans = transactionSchema.safeParse(transaction);
+    const isValidTrans = transWithVerifySchema.safeParse(transaction);
     if (!isValidTrans.success) {
       throw new CustomError(
         "invalid transaction input",
@@ -186,7 +179,7 @@ async function verifyPaymentOrder(
       );
     }
 
-    const isValidVerify = verifyOrderSchema.safeParse(verifiedInfo);
+    const isValidVerify = verifyOrderSchema.safeParse(verifyInfo);
     if (!isValidVerify.success) {
       throw new CustomError("invalid verify input", 400, isValidVerify.error);
     }
@@ -217,8 +210,6 @@ export default {
   createTransaction,
   getTransactions,
   getTransaction,
-  updateTransaction,
-  deleteTransaction,
   createPaymentOrder,
   verifyPaymentOrder,
 };
