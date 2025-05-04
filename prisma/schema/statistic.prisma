@@ -1,0 +1,114 @@
+// Total Students / Student by Department
+model DepartmentStudentStats {
+    id       String @id @default(uuid())
+    year     Int
+    students Int
+    teachers Int
+
+    department   Department @relation(fields: [departmentId], references: [id])
+    departmentId String
+
+    degree   Degree @relation(fields: [degreeId], references: [id])
+    degreeId String
+
+    Collage   Collage @relation(fields: [collageId], references: [id])
+    collageId String
+
+    @@unique([collageId, departmentId, degreeId, year])
+}
+
+model DepartmentTeacherStats {
+    id       String @id @default(uuid())
+    year     Int
+    students Int
+    teachers Int
+
+    department   Department @relation(fields: [departmentId], references: [id])
+    departmentId String
+
+    Collage   Collage @relation(fields: [collageId], references: [id])
+    collageId String
+
+    @@unique([collageId, departmentId, year])
+}
+
+// Graduation Rate
+model GraduationStats {
+    id        String @id @default(uuid())
+    year      Int
+    appeared  Int
+    graduated Int
+
+    department   Department @relation(fields: [departmentId], references: [id])
+    departmentId String
+
+    degree   Degree @relation(fields: [degreeId], references: [id])
+    degreeId String
+
+    Collage   Collage @relation(fields: [collageId], references: [id])
+    collageId String
+
+    @@unique([collageId, departmentId, degreeId, year])
+}
+
+// Student Satisfaction
+model SatisfactionSurvey {
+    id    String @id @default(uuid())
+    year  Int
+    score Float // scale of 1 to 5 or 0 to 100
+
+    Collage   Collage @relation(fields: [collageId], references: [id])
+    collageId String
+}
+
+// Placement by Department
+model PlacementStats {
+    id String @id @default(uuid())
+
+    year     Int
+    placed   Int
+    eligible Int
+
+    department   Department @relation(fields: [departmentId], references: [id])
+    departmentId String
+
+    degree   Degree @relation(fields: [degreeId], references: [id])
+    degreeId String
+
+    collageId String
+    Collage   Collage @relation(fields: [collageId], references: [id])
+
+    @@unique([collageId, departmentId, degreeId, year])
+}
+
+// Roled Staff Count
+model StaffRoleStats {
+    id    String @id @default(uuid())
+    role  String // e.g., 'admin', 'teacher'
+    year  Int
+    count Int
+
+    Collage   Collage @relation(fields: [collageId], references: [id])
+    collageId String
+
+    @@unique([collageId, role, year])
+}
+
+enum SourceType {
+    fees
+    grants
+    donations
+}
+
+// Total Revenue
+model RevenueStats {
+    id     String     @id @default(uuid())
+    year   Int
+    amount Float
+    source SourceType // e.g., 'fees', 'grants', 'donations'
+
+    Collage   Collage @relation(fields: [collageId], references: [id])
+    collageId String
+
+    @@unique([collageId, source, year])
+}

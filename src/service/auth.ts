@@ -5,14 +5,18 @@ import userRepository from "../repository/user";
 import { compareHashedPassword, genHashedPassword } from "../lib/password";
 import { CustomError } from "../lib/error";
 import { genJwtAccessToken } from "../lib/jwtToken";
+import { generateOTP } from "../utils/genRandom";
+import emailService from "../lib/email";
+import cache from "../cache/nodeCache";
 
 // types import
 import { TLoginClient } from "../zod/auth";
 import { TCollageClient } from "../zod/collage";
 import { TBankClient } from "../zod/bank";
 import { IBank, ICollage } from "../types";
-import { User } from "@prisma/client";
+import { User, UserRole } from "@prisma/client";
 import { TStuffClient } from "../zod/user";
+import { IForgotPassword } from "../controller/auth";
 
 async function register(
   userDate: TStuffClient,
@@ -92,7 +96,15 @@ async function register(
   }
 }
 
-async function login(data: TLoginClient): Promise<string | null> {
+interface ILogin {
+  accessToken: string;
+  user: {
+    id: string;
+    role: UserRole;
+    email: string;
+  };
+}
+async function login(data: TLoginClient): Promise<ILogin | null> {
   try {
     if (!data) {
       throw new CustomError("data required", 500);
@@ -122,9 +134,108 @@ async function login(data: TLoginClient): Promise<string | null> {
       throw new CustomError("access token not generated", 500);
     }
 
-    return accessToken;
+    return {
+      accessToken,
+      user: { id: user.id, role: user.role, email: user.email },
+    };
   } catch (error) {
     console.log("Error in login", error);
+    return null;
+  }
+}
+
+async function forgotPassword(info: IForgotPassword): Promise<string | null> {
+  try {
+    const user = await userRepository.findByEmailAndRole(
+      info.email,
+      info.role as UserRole
+    );
+    if (!user) {
+      throw new CustomError("user not found", 404);
+    }
+
+    const otp = generateOTP({ digit: 6 });
+
+    // cache otp
+    const otpCached = cache.set(`${user.email}_${user.role}`, otp, 10 * 60);
+    if (!otpCached) {
+      throw new CustomError("otp not cached", 500);
+    }
+
+    // send mail
+    const sendMail = await emailService.sendOTP(user.email, otp);
+    if (!sendMail) {
+      throw new CustomError("email not send successfully", 500);
+    }
+
+    return sendMail;
+  } catch (error) {
+    console.log("Error forgot password", error);
+    return null;
+  }
+}
+
+async function verifyOTP(
+  userInfo: IForgotPassword,
+  enteredOTP: string
+): Promise<boolean | null> {
+  try {
+    const user = await userRepository.findByEmailAndRole(
+      userInfo.email,
+      userInfo.role as UserRole
+    );
+    if (!user) {
+      throw new CustomError("user not found", 404);
+    }
+
+    const getOTP = cache.get(`${user.email}_${user.role}`);
+    if (!getOTP) {
+      throw new CustomError("otp expired");
+    }
+
+    if (String(getOTP) !== String(enteredOTP)) {
+      throw new CustomError("invalid OTP");
+    }
+
+    return true;
+  } catch (error) {
+    console.log("Error verify otp", error);
+    return null;
+  }
+}
+
+async function resetPassword(
+  userInfo: IForgotPassword,
+  newPassword: string
+): Promise<User | null> {
+  try {
+    const user = await userRepository.findByEmailAndRole(
+      userInfo.email,
+      userInfo.role as UserRole
+    );
+    if (!user) {
+      throw new CustomError("user not found", 404);
+    }
+
+    // hashed password
+    const hashedPassword = await genHashedPassword(newPassword);
+    if (!hashedPassword) {
+      throw new CustomError("password not hashed", 500);
+    }
+
+    // update user
+    const updatedUser = await userRepository.updatePassword(
+      user.email,
+      user.role,
+      hashedPassword
+    );
+    if (!updatedUser) {
+      throw new CustomError("user password not updated", 500);
+    }
+
+    return updatedUser;
+  } catch (error) {
+    console.log("Error reset password", error);
     return null;
   }
 }
@@ -133,4 +244,7 @@ async function login(data: TLoginClient): Promise<string | null> {
 export default {
   register,
   login,
+  forgotPassword,
+  verifyOTP,
+  resetPassword,
 };

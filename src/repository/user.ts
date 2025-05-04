@@ -325,6 +325,24 @@ async function updateStatus(
   return updatedUser;
 }
 
+async function updatePassword(
+  email: string,
+  role: UserRole,
+  hashedPassword: string
+): Promise<User | null> {
+  const updatedUser = await prisma.user.update({
+    where: {
+      email: email,
+      role: role,
+    },
+    data: {
+      password: hashedPassword,
+    },
+  });
+
+  return updatedUser;
+}
+
 // export
 export default {
   create,
@@ -336,4 +354,5 @@ export default {
   updateStudent,
   updateStuff,
   updateStatus,
+  updatePassword,
 };
