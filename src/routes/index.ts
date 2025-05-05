@@ -22,6 +22,7 @@ import asignTeacherRoutes from "./asign-teacher";
 import studyroomRoutes from "./studyroom";
 import examRoutes from "./exam";
 import formRoutes from "./form";
+import statsRoutes from "./statistic";
 import { authenticateHTTP } from "../middleware/authenticate";
 
 // create router
@@ -44,6 +45,7 @@ router.use("/attendances", attendanceRoutes);
 router.use("/batches", authenticateHTTP, batchRoutes);
 router.use("/notes", noteRoutes);
 router.use("/forms", authenticateHTTP, formRoutes);
+router.use("/stats", statsRoutes);
 router.use("/projects", projectRoutes);
 router.use("/events", eventRoutes);
 router.use("/results", authenticateHTTP, resultRoutes);

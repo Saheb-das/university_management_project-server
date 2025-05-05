@@ -35,6 +35,42 @@ async function create(payload: IAsign): Promise<AsignTeacher | null> {
       },
     });
 
+    const teacherUser = await tx.user.findFirst({
+      where: {
+        profile: {
+          stuff: {
+            id: payload.teacherId,
+          },
+        },
+      },
+    });
+
+    if (!teacherUser) {
+      throw new Error("teacher user not found");
+    }
+
+    // update or create teacher stats in department
+    const teacherStat = await tx.departmentTeacherStats.upsert({
+      where: {
+        collageId_departmentId_year: {
+          collageId: teacherUser.collageId,
+          departmentId: newAsign.departmentId,
+          year: teacherUser.createdAt.getFullYear(),
+        },
+      },
+      update: {
+        teachers: {
+          increment: 1,
+        },
+      },
+      create: {
+        teachers: 1,
+        year: teacherUser.createdAt.getFullYear(),
+        collageId: teacherUser.collageId,
+        departmentId: payload.departmentId,
+      },
+    });
+
     return newAsign;
   });
 

@@ -58,6 +58,27 @@ async function create(
       },
     });
 
+    // add in stats
+    const stuffStat = await tx.stuffRoleStats.upsert({
+      where: {
+        collageId_role: {
+          // replace with your actual @@unique constraint name
+          collageId: collageId,
+          role: newUser.role,
+        },
+      },
+      update: {
+        count: {
+          increment: 1,
+        },
+      },
+      create: {
+        role: newUser.role,
+        count: 1,
+        collageId: collageId,
+      },
+    });
+
     return newUser;
   });
 

@@ -93,6 +93,30 @@ async function create(
       },
     });
 
+    // update student stats by department
+    const studentStat = await tx.departmentStudentStats.upsert({
+      where: {
+        collageId_departmentId_degreeId_year: {
+          collageId: collageId,
+          departmentId: newAdmission.departmentId,
+          degreeId: newAdmission.degreeId,
+          year: newAdmission.inYear,
+        },
+      },
+      update: {
+        students: {
+          increment: 1,
+        },
+      },
+      create: {
+        year: newAdmission.inYear,
+        students: 1,
+        departmentId: newAdmission.departmentId,
+        degreeId: newAdmission.degreeId,
+        collageId: collageId,
+      },
+    });
+
     return newAdmission;
   });
 

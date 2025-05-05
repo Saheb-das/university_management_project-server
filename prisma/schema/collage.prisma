@@ -19,13 +19,13 @@ model Collage {
     salaries               Salary[]
     tutionFees             TutionFee[]
     conversations          Conversation[]
-    DepartmentStudentStats DepartmentStudentStats[]
-    DepartmentTeacherStats DepartmentTeacherStats[]
-    GraduationStats        GraduationStats[]
-    SatisfactionSurvey     SatisfactionSurvey[]
-    PlacementStats         PlacementStats[]
-    StaffRoleStats         StaffRoleStats[]
-    RevenueStats           RevenueStats[]
+    departmentStudentStats DepartmentStudentStats[]
+    departmentTeacherStats DepartmentTeacherStats[]
+    graduationStats        GraduationStats[]
+    satisfactionSurvey     SatisfactionSurvey[]
+    placementStats         PlacementStats[]
+    stuffRoleStats         StuffRoleStats[]
+    revenueStats           RevenueStats[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -50,10 +50,10 @@ model Department {
     batches                Batch[]
     asignTeachers          AsignTeacher[]
     admissions             Admission[]
-    DepartmentTeacherStats DepartmentTeacherStats[]
-    DepartmentStudentStats DepartmentStudentStats[]
-    GraduationStats        GraduationStats[]
-    PlacementStats         PlacementStats[]
+    departmentTeacherStats DepartmentTeacherStats[]
+    departmentStudentStats DepartmentStudentStats[]
+    graduationStats        GraduationStats[]
+    placementStats         PlacementStats[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -75,9 +75,9 @@ model Degree {
 
     courses                Course[]
     admissions             Admission[]
-    DepartmentStudentStats DepartmentStudentStats[]
-    GraduationStats        GraduationStats[]
-    PlacementStats         PlacementStats[]
+    departmentStudentStats DepartmentStudentStats[]
+    graduationStats        GraduationStats[]
+    placementStats         PlacementStats[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
