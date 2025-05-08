@@ -117,6 +117,31 @@ async function create(
       },
     });
 
+    // update graduation stats
+    const graduateStat = tx.graduationStats.upsert({
+      where: {
+        collageId_departmentId_degreeId_year: {
+          collageId: collageId,
+          departmentId: newAdmission.departmentId,
+          degreeId: newAdmission.degreeId,
+          year: newAdmission.inYear,
+        },
+      },
+      update: {
+        appeared: {
+          increment: 1,
+        },
+      },
+      create: {
+        appeared: 1,
+        graduated: 0,
+        year: newAdmission.inYear,
+        departmentId: newAdmission.departmentId,
+        degreeId: newAdmission.degreeId,
+        collageId: collageId,
+      },
+    });
+
     return newAdmission;
   });
 

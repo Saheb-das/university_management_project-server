@@ -1,10 +1,14 @@
+// external import
+import prisma from "../lib/prisma";
+
+// types import
 import {
+  Prisma,
   Transaction,
   TransactionMode,
   TransactionType,
   UserRole,
 } from "@prisma/client";
-import prisma from "../lib/prisma";
 import { ITransaction } from "../types/transaction";
 
 async function create(transInfo: ITransaction): Promise<Transaction | null> {
@@ -52,17 +56,62 @@ async function findById(
   sType: boolean,
   tType: boolean
 ): Promise<Transaction | null> {
+  const queryCluase = {
+    include: {
+      reciever: {
+        select: {
+          id: true,
+          bankAccount: true,
+        },
+      },
+      sender: {
+        select: {
+          id: true,
+          bankAccount: true,
+        },
+      },
+    },
+  };
+
   const transaction = await prisma.transaction.findUnique({
     where: {
       id: transactionId,
     },
     include: {
-      salary: sType,
-      tutionFee: tType,
+      salary: sType && queryCluase,
+      tutionFee: tType && queryCluase,
     },
   });
 
   return transaction;
+}
+
+async function findAllByRoleAndRoleId(
+  id: string,
+  role: UserRole
+): Promise<Transaction[] | null> {
+  let whereClause: any;
+  if (role === "student") {
+    whereClause = {
+      userRole: role,
+      tutionFee: {
+        senderId: id,
+      },
+    };
+  } else {
+    whereClause = {
+      userRole: role,
+      salary: {
+        recieverId: id,
+      },
+    };
+  }
+
+  const transactions = await prisma.transaction.findMany({
+    where: whereClause,
+  });
+
+  return transactions;
 }
 
 // export
@@ -71,4 +120,5 @@ export default {
   findAll,
   findById,
   findByType,
+  findAllByRoleAndRoleId,
 };

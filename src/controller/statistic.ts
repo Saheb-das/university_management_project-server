@@ -19,11 +19,13 @@ async function getStudentStatsByDept(
 
     const collageId = req.authUser.collageId;
 
-    const studentStats = statisticService.getAllStudentStatsByDept(collageId);
+    const studentStats = await statisticService.getAllStudentStatsByDept(
+      collageId
+    );
     if (!studentStats) {
       throw new CustomError("student stats not found", 404);
     }
-
+    console.log("student", studentStats);
     res.status(200).json({
       success: true,
       message: "student stats find successfully",
@@ -64,26 +66,19 @@ async function getTeacherStatsByDept(
 }
 
 async function getGrowth(
-  req: AuthRequest<{}, {}, { sYear: string; eYear: string }>,
+  req: AuthRequest,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const { eYear, sYear } = req.query;
   try {
     if (!req.authUser) {
       throw new CustomError("unauthrized user", 401);
     }
 
-    if (!sYear || !eYear) {
-      throw new CustomError("sYear and eYear both required", 400);
-    }
-
     const collageId = req.authUser.collageId;
 
     const collageGrowth = await statisticService.getGrowthByYearRange(
-      collageId,
-      sYear,
-      eYear
+      collageId
     );
     if (!collageGrowth) {
       throw new CustomError("collage growth not found", 404);

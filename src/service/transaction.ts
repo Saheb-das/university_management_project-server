@@ -330,6 +330,39 @@ async function createSalaryTrans(
   return newSalary;
 }
 
+async function getAllTransactionsByRoleAndUserId(
+  role: UserRole,
+  userId: string
+): Promise<Transaction[] | null> {
+  try {
+    let roledUser: any;
+    if (role === "student") {
+      roledUser = await studentRepository.findByUserId(userId);
+      if (!roledUser) {
+        throw new CustomError("student user not found", 404);
+      }
+    } else {
+      roledUser = await stuffRepository.findByUserId(userId);
+      if (!roledUser) {
+        throw new CustomError(`${role} user not found`, 404);
+      }
+    }
+
+    const trans = await transactionRepository.findAllByRoleAndRoleId(
+      roledUser.id,
+      role
+    );
+    if (!trans) {
+      throw new CustomError("transactions not found", 404);
+    }
+
+    return trans;
+  } catch (error) {
+    console.log("Error finding transactions", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createTransaction,
@@ -337,4 +370,5 @@ export default {
   getTransaction,
   createPaymentOrder,
   verifyPaymentOrderAndCreate,
+  getAllTransactionsByRoleAndUserId,
 };

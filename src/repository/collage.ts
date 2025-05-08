@@ -25,6 +25,14 @@ async function findById(collageId: string): Promise<Collage | null> {
     where: {
       id: collageId,
     },
+    include: {
+      departments: {
+        select: {
+          id: true,
+          type: true,
+        },
+      },
+    },
   });
 
   return collage;

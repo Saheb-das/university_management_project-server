@@ -9,6 +9,8 @@ import { checkPermission } from "../middleware/permission";
 const router = express.Router();
 
 // routes
+router.get("/:id", collageController.getCollage);
+
 router.patch(
   "/:id",
   checkPermission("update_collage"),

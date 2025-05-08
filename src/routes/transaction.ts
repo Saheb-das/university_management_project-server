@@ -17,9 +17,11 @@ router.get(
   transactionController.getTransactions
 );
 
+router.get("/me", transactionController.getMyTransactions);
+
 router.get(
   "/:id",
-  checkPermission("read_transaction"),
+  // checkPermission("read_transaction"),
   transactionController.getTransaction
 );
 

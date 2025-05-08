@@ -97,17 +97,18 @@ async function findTotalCountByYear(collageId: string, year?: string) {
   return totalStudents;
 }
 
-type StudentsByYear = {
+export type StudentsByYear = {
   year: number;
   _sum: {
     students: number | null;
   };
 };
 async function findTotalCountByYearRange(
-  collageId: string,
-  startYear: string,
-  endYear: string
+  collageId: string
 ): Promise<StudentsByYear[] | null> {
+  const endYear = new Date().getFullYear();
+  const startYear = endYear - 5;
+
   const yearRange = getYearRange(Number(startYear), Number(endYear));
 
   const studentsByYear = await prisma.departmentStudentStats.groupBy({

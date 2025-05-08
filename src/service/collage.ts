@@ -86,9 +86,24 @@ async function updateCollage(
   }
 }
 
+async function getCollageById(id: string): Promise<Collage | null> {
+  try {
+    const collage = await collageRepository.findById(id);
+    if (!collage) {
+      throw new CustomError("collage not found", 404);
+    }
+
+    return collage;
+  } catch (error) {
+    console.log("Error finding collage", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createDepartment,
   getAllDepartments,
   updateCollage,
+  getCollageById,
 };

@@ -6,6 +6,36 @@ import { Response, NextFunction } from "express";
 import { AuthRequest, ICollageUpdate } from "../types";
 import { CustomError } from "../lib/error";
 
+async function getCollage(
+  req: AuthRequest<{}, { id: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { id } = req.params;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (id !== req.authUser.collageId) {
+      throw new CustomError("invalid collage id", 400);
+    }
+
+    const collageInfo = await collageService.getCollageById(id);
+    if (!collageInfo) {
+      throw new CustomError("collage not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "collage fetched successfully",
+      colage: collageInfo,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function updateCollage(
   req: AuthRequest<ICollageUpdate>,
   res: Response,
@@ -107,6 +137,7 @@ async function getDepartments(
 
 // export
 export default {
+  getCollage,
   updateCollage,
   createCollageDepartment,
   getDepartments,

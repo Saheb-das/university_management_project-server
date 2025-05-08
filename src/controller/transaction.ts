@@ -1,17 +1,17 @@
 // internal import
 import transactionService from "../service/transaction";
-
-// types import
-import { Response, NextFunction } from "express";
-import { AuthRequest } from "../types";
+import { RoleEnum } from "../zod/auth";
 import { CustomError } from "../lib/error";
 import {
   transactionSchema,
   transWithVerifySchema,
-  TTransactionClient,
-  TVerifyClient,
   verifyOrderSchema,
 } from "../zod/transaction";
+
+// types import
+import { Response, NextFunction } from "express";
+import { AuthRequest } from "../types";
+import { TTransactionClient, TVerifyClient } from "../zod/transaction";
 
 async function createTransaction(
   req: AuthRequest<TTransactionClient, {}, { stuff: string; student: string }>,
@@ -205,6 +205,34 @@ async function verifyPaymentOrder(
   }
 }
 
+async function getMyTransactions(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    const trans = await transactionService.getAllTransactionsByRoleAndUserId(
+      req.authUser.role,
+      req.authUser.id
+    );
+    if (!trans) {
+      throw new CustomError("transactions not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "transactions fetched successfully",
+      transactions: trans,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // export
 export default {
   createTransaction,
@@ -212,4 +240,5 @@ export default {
   getTransaction,
   createPaymentOrder,
   verifyPaymentOrder,
+  getMyTransactions,
 };

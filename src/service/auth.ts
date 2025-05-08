@@ -102,6 +102,7 @@ interface ILogin {
     id: string;
     role: UserRole;
     email: string;
+    collageId: string;
   };
 }
 async function login(data: TLoginClient): Promise<ILogin | null> {
@@ -136,7 +137,12 @@ async function login(data: TLoginClient): Promise<ILogin | null> {
 
     return {
       accessToken,
-      user: { id: user.id, role: user.role, email: user.email },
+      user: {
+        id: user.id,
+        role: user.role,
+        email: user.email,
+        collageId: user.collageId,
+      },
     };
   } catch (error) {
     console.log("Error in login", error);

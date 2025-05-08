@@ -1,9 +1,13 @@
 // internal import
 import { CustomError } from "../lib/error";
-import studentStatsRepository from "../repository/studentStats";
+import studentStatsRepository, {
+  StudentsByYear,
+} from "../repository/studentStats";
 import collageRepository from "../repository/collage";
 import teacherStatsRepository from "../repository/teacherStat";
-import placementStatsRepository from "../repository/placementStats";
+import placementStatsRepository, {
+  TPlacement,
+} from "../repository/placementStats";
 import satisfyRepository from "../repository/satisfyStats";
 import revenueRepository from "../repository/revenue";
 import stuffStatsRepository from "../repository/stuffStats";
@@ -12,6 +16,7 @@ import stuffStatsRepository from "../repository/stuffStats";
 import { TStudentsByDepartment } from "../repository/studentStats";
 import { TSatisfyRate } from "../repository/satisfyStats";
 import { TTeacherByDepartment } from "../repository/teacherStat";
+import { StuffRoleStats } from "@prisma/client";
 
 async function getAllStudentStatsByDept(
   collageId: string
@@ -60,24 +65,16 @@ async function getAllTeacherStatsByDept(
 }
 
 async function getGrowthByYearRange(
-  collageId: string,
-  startYear: string,
-  endYear: string
-) {
+  collageId: string
+): Promise<StudentsByYear[] | null> {
   try {
     const collage = await collageRepository.findById(collageId);
     if (!collage) {
       throw new CustomError("collage not found", 404);
     }
 
-    if (Number(startYear) > Number(endYear)) {
-      throw new CustomError("end year should be greater than start year");
-    }
-
     const growthStats = await studentStatsRepository.findTotalCountByYearRange(
-      collage.id,
-      startYear,
-      endYear
+      collage.id
     );
     if (!growthStats) {
       throw new CustomError("growth stats not found", 404);
@@ -90,7 +87,9 @@ async function getGrowthByYearRange(
   }
 }
 
-async function getPlacementGroupByDept(collageId: string) {
+async function getPlacementGroupByDept(
+  collageId: string
+): Promise<TPlacement[] | null> {
   try {
     const collage = await collageRepository.findById(collageId);
     if (!collage) {
@@ -175,7 +174,9 @@ async function getSatisfyRateByPrevAndCurrYear(
   }
 }
 
-async function getStuffStats(collageId: string) {
+async function getStuffStats(
+  collageId: string
+): Promise<StuffRoleStats[] | null> {
   try {
     const collage = await collageRepository.findById(collageId);
     if (!collage) {

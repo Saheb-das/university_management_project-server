@@ -238,7 +238,6 @@ interface IUpdateUser {
   email?: string;
   address?: string;
   phoneNo?: string;
-  profileImg?: string;
   highestDegree?: string;
   specialization?: string;
 }

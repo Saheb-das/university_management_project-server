@@ -16,6 +16,7 @@ model DepartmentStudentStats {
     @@unique([collageId, departmentId, degreeId, year])
 }
 
+// Total Teachers / Teachers by department
 model DepartmentTeacherStats {
     id       String @id @default(uuid())
     year     Int

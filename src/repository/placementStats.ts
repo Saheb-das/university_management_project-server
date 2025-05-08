@@ -1,7 +1,7 @@
 import { DeptType } from "@prisma/client";
 import prisma from "../lib/prisma";
 
-type TPlacement = {
+export type TPlacement = {
   departmentId: string;
   departmentName: DeptType | undefined;
   eligible: number;

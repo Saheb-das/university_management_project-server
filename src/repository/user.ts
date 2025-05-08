@@ -215,7 +215,6 @@ async function updateStudent(
   const profilePayload = {
     ...(payload.address ? { address: payload.address } : {}),
     ...(payload.phoneNo ? { phoneNo: payload.phoneNo } : {}),
-    ...(payload.profileImg ? { avatar: payload.profileImg } : {}),
   };
   const studentPayload = {
     ...(payload.registretionNo
@@ -265,7 +264,6 @@ async function updateStuff(
   const profilePayload = {
     ...(payload.address ? { address: payload.address } : {}),
     ...(payload.phoneNo ? { phoneNo: payload.phoneNo } : {}),
-    ...(payload.profileImg ? { avatar: payload.profileImg } : {}),
   };
   const stuffPayload = {
     ...(payload.highestDegree ? { highestDegree: payload.highestDegree } : {}),

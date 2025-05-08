@@ -69,7 +69,6 @@ export const updateStuffUserSchema = z.object({
   email: z.string().email().optional(),
   address: z.string().min(1, "Address cannot be empty").optional(),
   phoneNo: phoneNoValidation.optional(),
-  profileImg: z.string().url("Invalid image URL").optional(),
   highestDegree: z.string().min(1, "Degree cannot be empty").optional(),
   specialization: z
     .string()
@@ -87,7 +86,6 @@ export const updateStudentUserSchema = z.object({
   email: z.string().email().optional(),
   address: z.string().min(1, "Address cannot be empty").optional(),
   phoneNo: phoneNoValidation.optional(),
-  profileImg: z.string().url("Invalid image URL").optional(),
   rollNo: z.string().min(6, "Invalid image URL").optional(),
   registretionNo: z.string().min(6, "Invalid image URL").optional(),
 });
