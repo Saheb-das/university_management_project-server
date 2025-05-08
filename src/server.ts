@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import morgan from "morgan";
 import cors from "cors";
 import { createServer } from "http";
+import path from "path";
 
 // internal imports
 import { globalErrorHandler, noMatchRoute } from "./lib/error";
@@ -20,6 +21,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cors());
 app.use(morgan("dev"));
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // health route
 app.use("/health", (_req, res) => {

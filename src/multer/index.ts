@@ -41,7 +41,6 @@ const storage = multer.diskStorage({
       }
 
       const fileName = getFileName(file, authReq.authUser, req.query);
-      console.log("fileName", fileName);
 
       cb(null, fileName);
     } catch (error) {
