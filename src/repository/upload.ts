@@ -4,7 +4,7 @@ import prisma from "../lib/prisma";
 // types import
 import { Profile } from "@prisma/client";
 
-async function create(
+async function update(
   userId: string,
   collageId: string,
   avatarPath: string
@@ -26,5 +26,5 @@ async function create(
 
 // export
 export default {
-  create,
+  update,
 };

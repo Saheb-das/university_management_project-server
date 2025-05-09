@@ -85,11 +85,14 @@ async function create(
   return result;
 }
 
-async function findById(id: string): Promise<User | null> {
+async function findById(
+  id: string,
+  collageId: string = ""
+): Promise<User | null> {
+  const whereCluase = collageId ? { id, collageId } : { id };
+
   const user = await prisma.user.findUnique({
-    where: {
-      id: id,
-    },
+    where: whereCluase,
   });
 
   return user;
@@ -298,8 +301,8 @@ async function updateStuff(
       data: profilePayload,
     });
 
-    // update student
-    const updatedStuff = await tx.student.updateMany({
+    // update stuff
+    const updatedStuff = await tx.stuff.updateMany({
       where: {
         profile: {
           userId: userId,

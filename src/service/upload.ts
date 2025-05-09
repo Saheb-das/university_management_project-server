@@ -1,14 +1,23 @@
+// external import
+import fs from "fs";
+
 // internal import
 import { CustomError } from "../lib/error";
 import uploadRepository from "../repository/upload";
 
-async function createUpload(
+async function changeAvatar(
   userId: string,
   collageId: string,
-  avatarPath: string
+  avatarPath: string,
+  oldPath: string
 ) {
   try {
-    const avatarUploaded = await uploadRepository.create(
+    if (oldPath) {
+      // delete old uploaded file
+      fs.unlinkSync(oldPath);
+    }
+
+    const avatarUploaded = await uploadRepository.update(
       userId,
       collageId,
       avatarPath
@@ -26,5 +35,5 @@ async function createUpload(
 
 // export
 export default {
-  createUpload,
+  changeAvatar,
 };

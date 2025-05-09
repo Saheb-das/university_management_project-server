@@ -1,7 +1,7 @@
 // internal import
 import userRepository from "../repository/user";
 import { CustomError } from "../lib/error";
-import { genHashedPassword } from "../lib/password";
+import { compareHashedPassword, genHashedPassword } from "../lib/password";
 import conversationRespoitory from "../repository/conversation";
 import participantRepository from "../repository/participant";
 
@@ -15,6 +15,7 @@ import {
 } from "../zod/user";
 import { IConversation } from "../repository/conversation";
 import { IParticipant } from "../repository/participant";
+import { IChangePassword } from "../controller/user";
 
 export interface IBaseUser {
   firstName: string;
@@ -286,6 +287,46 @@ async function updateStudentUser(
   }
 }
 
+async function changePassword(
+  userId: string,
+  collageId: string,
+  passInfo: IChangePassword
+): Promise<User | null> {
+  try {
+    const user = await userRepository.findById(userId, collageId);
+    if (!user) {
+      throw new CustomError("user not found", 404);
+    }
+
+    const isValidPass = await compareHashedPassword(
+      passInfo.oldPass,
+      user.password
+    );
+    if (!isValidPass) {
+      throw new CustomError("invalid password");
+    }
+
+    const hashed = await genHashedPassword(passInfo.newPass);
+    if (!hashed) {
+      throw new CustomError("password not hashed", 500);
+    }
+
+    const updatedPassword = await userRepository.updatePassword(
+      user.email,
+      user.role,
+      hashed
+    );
+    if (!updatedPassword) {
+      throw new CustomError("password not updated", 500);
+    }
+
+    return updatedPassword;
+  } catch (error) {
+    console.log("Error changing password", 500);
+    return null;
+  }
+}
+
 // export
 export default {
   createUser,
@@ -294,4 +335,5 @@ export default {
   getAllTeacherUsers,
   updateStuffUser,
   updateStudentUser,
+  changePassword,
 };

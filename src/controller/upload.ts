@@ -3,17 +3,18 @@ import fs from "fs";
 
 // internal import
 import uploadService from "../service/upload";
+import { CustomError } from "../lib/error";
 
 // types import
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "../types";
-import { CustomError } from "../lib/error";
 
-async function createNewUpload(
-  req: AuthRequest,
+async function changeAvatar(
+  req: AuthRequest<{ oldPath: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> {
+  const { oldPath } = req.body;
   try {
     if (!req.file) {
       throw new CustomError("No file uploaded", 400);
@@ -26,12 +27,13 @@ async function createNewUpload(
     const userId = req.authUser.id;
     const collageId = req.authUser.collageId;
 
-    const { filename, path } = req.file;
+    const { path } = req.file;
 
-    const avatarUpdated = await uploadService.createUpload(
+    const avatarUpdated = await uploadService.changeAvatar(
       userId,
       collageId,
-      path
+      path,
+      oldPath
     );
     if (!avatarUpdated) {
       throw new CustomError("avatar not updated", 500);
@@ -87,6 +89,6 @@ async function changeUpload(
 
 // export
 export default {
-  createNewUpload,
+  changeAvatar,
   changeUpload,
 };

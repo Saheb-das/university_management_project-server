@@ -9,25 +9,17 @@ import { upload } from "../multer";
 const router = express.Router();
 
 // routes
-router.post(
+router.patch(
   "/profile-pic",
   upload.single("profilePic"),
-  uploadController.createNewUpload
+  uploadController.changeAvatar
 );
 
-router.post(
-  "/document",
-  upload.single("document"),
-  uploadController.createNewUpload
-);
+// router.post("/document", upload.single("document"), uploadController.newUpload);
 
-router.post(
-  "/project",
-  upload.single("project"),
-  uploadController.createNewUpload
-);
+// router.post("/project", upload.single("project"), uploadController.newUpload);
 
-router.post("/event", upload.single("event"), uploadController.createNewUpload);
+// router.post("/event", upload.single("event"), uploadController.newUpload);
 
 router.patch(
   "/profile-pic",

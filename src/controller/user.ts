@@ -2,6 +2,7 @@
 import { CustomError } from "../lib/error";
 import userService, { RoleOpt } from "../service/user";
 import {
+  changePasswordSchema,
   stuffRoleSchema,
   stuffSchema,
   TStuffClient,
@@ -209,6 +210,53 @@ async function updateUser(
   }
 }
 
+export interface IChangePassword {
+  oldPass: string;
+  newPass: string;
+  confirmNewPass: string;
+}
+async function updateUserPassword(
+  req: AuthRequest<IChangePassword, { id: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { id } = req.params;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    const userId = req.authUser.id;
+    const collageId = req.authUser.collageId;
+
+    if (userId !== id) {
+      throw new CustomError("invalid id params", 400);
+    }
+
+    const isValid = changePasswordSchema.safeParse(req.body);
+    if (!isValid.success) {
+      throw new CustomError("invalid input", 400, isValid.error);
+    }
+
+    const changedPassword = await userService.changePassword(
+      userId,
+      collageId,
+      isValid.data
+    );
+    if (!changedPassword) {
+      throw new CustomError("password not changed", 500);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "password update successfully",
+      changedPassword: !!changedPassword,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function deleteUser() {}
 
 // export
@@ -218,5 +266,6 @@ export default {
   getUser,
   getTeacherUsers,
   updateUser,
+  updateUserPassword,
   deleteUser,
 };
