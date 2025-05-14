@@ -23,6 +23,8 @@ const storage = multer.diskStorage({
       uploadPath = "uploads/project";
     } else if (file.fieldname === "event") {
       uploadPath = "uploads/event";
+    } else if (file.fieldname === "logo") {
+      uploadPath = "uploads/logos";
     } else {
       uploadPath = "uploads/others";
     }

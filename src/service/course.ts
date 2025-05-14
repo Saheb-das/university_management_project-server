@@ -1,6 +1,7 @@
 // internal import
 import courseRepository from "../repository/course";
 import semesterRepository from "../repository/semester";
+import degreeRepository from "../repository/degree";
 import { CustomError } from "../lib/error";
 
 // types import
@@ -17,6 +18,11 @@ export interface ICourse {
 
 async function createCourse(courseInfo: TCourseClient): Promise<Course | null> {
   try {
+    const isExistDegree = await degreeRepository.findById(courseInfo.degree);
+    if (!isExistDegree) {
+      throw new CustomError("degree not found", 404);
+    }
+
     const coursePayload: ICourse = {
       name: courseInfo.name,
       courseFees: courseInfo.totalFees,
@@ -61,8 +67,30 @@ async function getAllCourses(
   }
 }
 
+async function getAllSubjectsByCourseId(courseId: string) {
+  try {
+    const course = await courseRepository.findByIdWithFilter(courseId);
+    if (!course) {
+      throw new CustomError("course not found", 404);
+    }
+
+    const courseSubjects = courseRepository.findAllSubjectsIncludeSemester(
+      course.id
+    );
+    if (!courseSubjects) {
+      throw new CustomError("course subjects not found", 404);
+    }
+
+    return courseSubjects;
+  } catch (error) {
+    console.log("Error finding course subjects", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createCourse,
   getAllCourses,
+  getAllSubjectsByCourseId,
 };

@@ -9,13 +9,11 @@ import { checkPermission } from "../middleware/permission";
 const router = express.Router();
 
 // routes
-router.post(
-  "/",
-  checkPermission("create_course"),
-  courseController.createCourse
-);
+router.post("/", courseController.createCourse);
 
 router.get("/", checkPermission("read_course"), courseController.getCourses);
+
+router.get("/subjects", courseController.getSubjectsByCourseId);
 
 router.get("/:id", courseController.getCourse);
 

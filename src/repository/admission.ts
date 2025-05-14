@@ -142,6 +142,22 @@ async function create(
       },
     });
 
+    const newEnrollment = await tx.collageEnrollmentStats.upsert({
+      where: {
+        collageId: newUser.collageId,
+      },
+      update: {
+        totalStudents: {
+          increment: 1,
+        },
+      },
+      create: {
+        collageId: newUser.collageId,
+        totalTeacher: 0,
+        totalStudents: 1,
+      },
+    });
+
     return newAdmission;
   });
 

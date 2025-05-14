@@ -15,6 +15,8 @@ router.patch(
   uploadController.changeAvatar
 );
 
+router.patch("/logo", upload.single("logo"), uploadController.changeLogo);
+
 // router.post("/document", upload.single("document"), uploadController.newUpload);
 
 // router.post("/project", upload.single("project"), uploadController.newUpload);

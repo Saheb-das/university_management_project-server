@@ -2,9 +2,9 @@
 import prisma from "../lib/prisma";
 
 // types import
-import { Profile } from "@prisma/client";
+import { Collage, Profile } from "@prisma/client";
 
-async function update(
+async function updateAvatar(
   userId: string,
   collageId: string,
   avatarPath: string
@@ -24,7 +24,24 @@ async function update(
   return updateAvatar;
 }
 
+async function updateLogo(
+  collageId: string,
+  avatarPath: string
+): Promise<Collage | null> {
+  const updateLogo = await prisma.collage.update({
+    where: {
+      id: collageId,
+    },
+    data: {
+      avatar: avatarPath,
+    },
+  });
+
+  return updateLogo;
+}
+
 // export
 export default {
-  update,
+  updateAvatar,
+  updateLogo,
 };

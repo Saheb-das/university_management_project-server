@@ -20,7 +20,8 @@ async function createCourse(
 
     const isValid = courseschema.safeParse(courseInfo);
     if (!isValid.success) {
-      throw new CustomError("invalid data", 400);
+      console.log(isValid.error);
+      throw new CustomError("invalid data", 400, isValid.error);
     }
 
     const newCourse = await courseService.createCourse(courseInfo);
@@ -39,12 +40,11 @@ async function createCourse(
 }
 
 async function getCourses(
-  req: AuthRequest<{ degreeId: string }, {}, { sem: string }>,
+  req: AuthRequest<{}, {}, { degreeId: string; sem: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const { sem } = req.query;
-  const { degreeId } = req.body;
+  const { degreeId, sem } = req.query;
   try {
     if (!req.authUser) {
       throw new CustomError("unauthorized user", 401);
@@ -70,6 +70,36 @@ async function getCourses(
   }
 }
 
+async function getSubjectsByCourseId(
+  req: AuthRequest<{}, {}, { courseId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { courseId } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!courseId) {
+      throw new CustomError("course id required", 400);
+    }
+
+    const subjects = await courseService.getAllSubjectsByCourseId(courseId);
+    if (!subjects) {
+      throw new CustomError("subjects not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "course subjects fetched successfully",
+      courseSubjects: subjects,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function getCourse() {}
 async function updateCourse() {}
 async function deleteCourse() {}
@@ -79,6 +109,7 @@ export default {
   createCourse,
   getCourses,
   getCourse,
+  getSubjectsByCourseId,
   updateCourse,
   deleteCourse,
 };

@@ -79,6 +79,24 @@ async function create(
       },
     });
 
+    if (newUser.role === "teacher") {
+      const newEnrollment = await tx.collageEnrollmentStats.upsert({
+        where: {
+          collageId: newUser.collageId,
+        },
+        update: {
+          totalTeacher: {
+            increment: 1,
+          },
+        },
+        create: {
+          collageId: newUser.collageId,
+          totalTeacher: 1,
+          totalStudents: 0,
+        },
+      });
+    }
+
     return newUser;
   });
 

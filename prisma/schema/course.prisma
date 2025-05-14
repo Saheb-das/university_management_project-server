@@ -9,7 +9,7 @@ model Course {
     degreeId String
 
     semesters  Semester[]
-    Student    Student[]
+    student    Student[]
     batches    Batch[]
     admissions Admission[]
     exams      Exam[]

@@ -2,13 +2,24 @@
 import prisma from "../lib/prisma";
 
 // types import
-import { Department, DeptType } from "@prisma/client";
+import { Department, DeptType, Prisma } from "@prisma/client";
 import { IDeprtInfo } from "../service/collage";
+
+export type TDepartmentWithDeg = Prisma.DepartmentGetPayload<{
+  include: {
+    degrees: {
+      select: {
+        id: true;
+        type: true;
+      };
+    };
+  };
+}>;
 
 async function create(
   collageId: string,
   department: IDeprtInfo
-): Promise<Department> {
+): Promise<TDepartmentWithDeg | null> {
   const result = await prisma.$transaction(async (tx) => {
     // not found, create department
     const deprt = await tx.department.create({
@@ -28,7 +39,20 @@ async function create(
       });
     }
 
-    return deprt;
+    // fetch and return department with degrees
+    const fullDepartment = await tx.department.findUnique({
+      where: { id: deprt.id },
+      include: {
+        degrees: {
+          select: {
+            id: true,
+            type: true,
+          },
+        },
+      },
+    });
+
+    return fullDepartment;
   });
 
   return result;
@@ -42,7 +66,7 @@ async function findAllByCollageId(
     where: {
       collageId: id,
     },
-    include: { degree: includeDegree },
+    include: { degrees: includeDegree },
   });
 
   return departments;

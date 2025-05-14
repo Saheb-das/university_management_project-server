@@ -1,10 +1,10 @@
 // internal import
 import collageService, { IDeprtInfo } from "../service/collage";
+import { CustomError } from "../lib/error";
 
 // types imoprt
 import { Response, NextFunction } from "express";
 import { AuthRequest, ICollageUpdate } from "../types";
-import { CustomError } from "../lib/error";
 
 async function getCollage(
   req: AuthRequest<{}, { id: string }>,
@@ -29,7 +29,7 @@ async function getCollage(
     res.status(200).json({
       success: true,
       message: "collage fetched successfully",
-      colage: collageInfo,
+      collage: collageInfo,
     });
   } catch (error) {
     next(error);
@@ -127,7 +127,7 @@ async function getDepartments(
 
     res.status(200).json({
       success: true,
-      message: "departtments found",
+      message: "departments found",
       departments: departments,
     });
   } catch (error) {

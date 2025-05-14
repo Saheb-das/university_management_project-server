@@ -17,7 +17,7 @@ async function changeAvatar(
       fs.unlinkSync(oldPath);
     }
 
-    const avatarUploaded = await uploadRepository.update(
+    const avatarUploaded = await uploadRepository.updateAvatar(
       userId,
       collageId,
       avatarPath
@@ -33,7 +33,34 @@ async function changeAvatar(
   }
 }
 
+async function changeLogo(
+  collageId: string,
+  logoPath: string,
+  oldPath: string
+) {
+  try {
+    if (oldPath) {
+      // delete old uploaded file
+      fs.unlinkSync(oldPath);
+    }
+
+    const avatarUploaded = await uploadRepository.updateLogo(
+      collageId,
+      logoPath
+    );
+    if (!avatarUploaded) {
+      throw new CustomError("avatar not updated", 500);
+    }
+
+    return avatarUploaded;
+  } catch (error) {
+    console.log("Error uploading avatar", error);
+    return null;
+  }
+}
+
 // export
 export default {
   changeAvatar,
+  changeLogo,
 };

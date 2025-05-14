@@ -2,7 +2,7 @@
 import prisma from "../lib/prisma";
 
 // internal import
-import { Course } from "@prisma/client";
+import { Course, Prisma } from "@prisma/client";
 import { ICourse } from "../service/course";
 
 async function create(courseInfo: ICourse): Promise<Course | null> {
@@ -54,9 +54,53 @@ async function findByIdWithFilter(
   return course;
 }
 
+type TCourseWithSubjectsIncludeSem = Prisma.CourseGetPayload<{
+  include: {
+    semesters: {
+      select: {
+        semNo: true;
+      };
+      include: {
+        subjects: {
+          select: {
+            name: true;
+            subjectCode: true;
+            credit: true;
+          };
+        };
+      };
+    };
+  };
+}>;
+async function findAllSubjectsIncludeSemester(
+  courseId: string
+): Promise<TCourseWithSubjectsIncludeSem | null> {
+  const courseSubjects = await prisma.course.findFirst({
+    where: {
+      id: courseId,
+    },
+    include: {
+      semesters: {
+        include: {
+          subjects: {
+            select: {
+              name: true,
+              subjectCode: true,
+              credit: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return courseSubjects;
+}
+
 // export
 export default {
   create,
   findAll,
+  findAllSubjectsIncludeSemester,
   findByIdWithFilter,
 };

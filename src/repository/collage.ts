@@ -32,6 +32,7 @@ async function findById(collageId: string): Promise<Collage | null> {
           type: true,
         },
       },
+      collageEnrollmentStats: true,
     },
   });
 

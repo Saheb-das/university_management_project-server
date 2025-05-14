@@ -9,6 +9,8 @@ import { checkPermission } from "../middleware/permission";
 const router = express.Router();
 
 // routes
+router.get("/departments", collageController.getDepartments);
+
 router.get("/:id", collageController.getCollage);
 
 router.patch(
@@ -21,12 +23,6 @@ router.post(
   "/departments",
   checkPermission("create_department"),
   collageController.createCollageDepartment
-);
-
-router.get(
-  "/departments",
-  checkPermission("read_collage"),
-  collageController.getDepartments
 );
 
 // export

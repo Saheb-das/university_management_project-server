@@ -49,6 +49,44 @@ async function changeAvatar(
   }
 }
 
+async function changeLogo(
+  req: AuthRequest<{ oldPath: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { oldPath } = req.body;
+  try {
+    if (!req.file) {
+      throw new CustomError("No file uploaded", 400);
+    }
+
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    const collageId = req.authUser.collageId;
+
+    const { path } = req.file;
+
+    const logoUpdated = await uploadService.changeLogo(
+      collageId,
+      path,
+      oldPath
+    );
+    if (!logoUpdated) {
+      throw new CustomError("logo not updated", 500);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Logo uploaded successfully",
+      collageLogo: logoUpdated,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function changeUpload(
   req: AuthRequest<{ oldPath: string }>,
   res: Response,
@@ -90,5 +128,6 @@ async function changeUpload(
 // export
 export default {
   changeAvatar,
-  changeUpload,
+  changeLogo,
+  changeUpload, // it will be deleted
 };

@@ -1,12 +1,15 @@
 // internal import
 import collageRepository from "../repository/collage";
-import departmentRepository from "../repository/department";
+import departmentRepository, {
+  TDepartmentWithDeg,
+} from "../repository/department";
 import degreeRepository from "../repository/degree";
 
 // types import
 import { Collage, Department, Degree } from "@prisma/client";
 import { ICollageUpdate } from "../types";
 import { CustomError } from "../lib/error";
+import degree from "../repository/degree";
 
 export type TDeaprtmentType =
   | "engineering"
@@ -25,25 +28,40 @@ export interface IDeprtInfo {
 async function createDepartment(
   collageId: string,
   department: IDeprtInfo
-): Promise<Department | null> {
+): Promise<TDepartmentWithDeg | null> {
   try {
     const isExist = await departmentRepository.findByTypeAndCollageId(
       department.type,
       collageId
     );
+
+    let dept: any;
     if (isExist) {
-      throw new CustomError("department all ready exists");
+      const newDegArr = await degreeRepository.createAllWithoutDuplicate(
+        isExist.id,
+        department.degree
+      );
+      if (!newDegArr) {
+        throw new CustomError("degree not created", 500);
+      }
+
+      dept = {
+        ...isExist,
+        degrees: [...newDegArr],
+      };
+    } else {
+      const newDepartment = await departmentRepository.create(
+        collageId,
+        department
+      );
+      if (!newDepartment) {
+        throw new CustomError("department not created", 500);
+      }
+
+      dept = newDepartment;
     }
 
-    const newDepartment = await departmentRepository.create(
-      collageId,
-      department
-    );
-
-    if (!newDepartment) {
-      throw new CustomError("department not created", 500);
-    }
-    return newDepartment;
+    return dept;
   } catch (error) {
     console.log("Error creating department", error);
     return null;

@@ -22,9 +22,9 @@ async function createSubjects(
 
     const isValid = subjectsSchema.safeParse(allSubjects);
     if (!isValid.success) {
-      console.log("isValid", isValid.success);
+      console.log(isValid.error);
 
-      throw new CustomError("invalid data", 400);
+      throw new CustomError("invalid data", 400, isValid.error);
     }
 
     const newSubjects = await subjectService.createSubjects(isValid.data);
