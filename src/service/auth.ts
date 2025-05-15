@@ -8,6 +8,7 @@ import { genJwtAccessToken } from "../lib/jwtToken";
 import { generateOTP } from "../utils/genRandom";
 import emailService from "../lib/email";
 import cache from "../cache/nodeCache";
+import conversationRespoitory from "../repository/conversation";
 
 // types import
 import { TLoginClient } from "../zod/auth";
@@ -17,6 +18,7 @@ import { IBank, ICollage } from "../types";
 import { User, UserRole } from "@prisma/client";
 import { TStuffClient } from "../zod/user";
 import { IForgotPassword } from "../controller/auth";
+import { IConversation } from "../repository/conversation";
 
 async function register(
   userDate: TStuffClient,
@@ -87,6 +89,24 @@ async function register(
     const newUser = await userRepository.create(userPayload, newCollage.id);
     if (!newUser) {
       throw new CustomError("user not created", 500);
+    }
+
+    // conversation create
+    if (newUser.role !== "superadmin") {
+      throw new CustomError("role should be superadmin");
+    }
+
+    const conPayload: IConversation = {
+      conName: "announcement",
+      collageId: newUser.collageId,
+    };
+
+    // announcement conversation create
+    const newAnnouncementConversation = await conversationRespoitory.create(
+      conPayload
+    );
+    if (!newAnnouncementConversation) {
+      throw new CustomError("announcement conversation not created", 500);
     }
 
     return newUser;

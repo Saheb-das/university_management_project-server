@@ -16,6 +16,7 @@ import {
 // types import
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "../types";
+import { UserRole } from "@prisma/client";
 
 async function createUser(
   req: AuthRequest<TStuffClient>,
@@ -33,7 +34,9 @@ async function createUser(
 
     const isValid = stuffSchema.safeParse(userInfo);
     if (!isValid.success) {
-      throw new CustomError(isValid.error.message, 400);
+      console.log(isValid.error.message);
+
+      throw new CustomError("invalid input", 400, isValid.error);
     }
 
     const newUser = await userService.createUser(userInfo, collageId);
@@ -257,6 +260,38 @@ async function updateUserPassword(
   }
 }
 
+async function updateUserStatus(
+  req: AuthRequest<{ newStatus: string }, { id: string }, { role: UserRole }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { newStatus } = req.body;
+  const { role } = req.query;
+  const { id } = req.params;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    const updatedStatus = await userService.updateUserStatus(
+      id,
+      role,
+      newStatus
+    );
+    if (!updatedStatus) {
+      throw new CustomError("user status not updated", 500);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "status updated successfully",
+      user: updatedStatus,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function deleteUser() {}
 
 // export
@@ -267,5 +302,6 @@ export default {
   getTeacherUsers,
   updateUser,
   updateUserPassword,
+  updateUserStatus,
   deleteUser,
 };

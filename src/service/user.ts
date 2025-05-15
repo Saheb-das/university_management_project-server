@@ -180,7 +180,7 @@ async function createUser(
 
     return newUser;
   } catch (error) {
-    console.log("Error create user", 500);
+    console.log("Error create user", error);
     return null;
   }
 }
@@ -327,6 +327,37 @@ async function changePassword(
   }
 }
 
+async function updateUserStatus(
+  userId: string,
+  role: UserRole,
+  newStatus: string
+): Promise<User | null> {
+  try {
+    const user = await userRepository.findById(userId);
+    if (!user) {
+      throw new CustomError("user not found", 404);
+    }
+
+    if (user.role !== role) {
+      throw new CustomError("invalid user role", 400);
+    }
+
+    const updatedStatus = userRepository.updateStatus(
+      user.id,
+      user.role,
+      newStatus
+    );
+    if (!updatedStatus) {
+      throw new CustomError("user status not updated", 500);
+    }
+
+    return updatedStatus;
+  } catch (error) {
+    console.log("Error updating status", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createUser,
@@ -335,5 +366,6 @@ export default {
   getAllTeacherUsers,
   updateStuffUser,
   updateStudentUser,
+  updateUserStatus,
   changePassword,
 };

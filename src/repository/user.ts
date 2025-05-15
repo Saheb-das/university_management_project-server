@@ -350,7 +350,7 @@ async function updateStuff(
 async function updateStatus(
   userId: string,
   role: UserRole,
-  status: ActiveStatus
+  status: string
 ): Promise<User | null> {
   const updatedUser = await prisma.user.update({
     where: {
@@ -358,7 +358,7 @@ async function updateStatus(
       role: role,
     },
     data: {
-      activeStatus: status,
+      activeStatus: status as ActiveStatus,
     },
   });
 
