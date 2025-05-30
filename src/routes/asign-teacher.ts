@@ -8,9 +8,9 @@ import asignTeacherController from "../controller/asign-teacher";
 const router = express.Router();
 
 // routes
-router.post("/:teacherId", asignTeacherController.asignTeacher);
-
 router.get("/:teacherId/subjects", asignTeacherController.getSubjects);
+
+router.post("/:teacherId", asignTeacherController.asignTeacher);
 
 router.delete("/:teacherId", asignTeacherController.removeSubjectFromTeacher);
 

@@ -19,6 +19,7 @@ async function asignTeacher(
 ): Promise<void> {
   const { batchName, semester, subject } = req.body;
   const { teacherId } = req.params;
+
   try {
     if (!req.authUser) {
       throw new CustomError("unauthorized user", 401);
@@ -43,7 +44,7 @@ async function asignTeacher(
 
     res.status(200).json({
       success: true,
-      message: "user fetched successfully",
+      message: "teacher asigned successfully",
       asigned: asignTeacher,
     });
   } catch (error) {
@@ -114,7 +115,7 @@ async function removeSubjectFromTeacher(
 
     res.status(200).json({
       success: true,
-      message: "user fetched successfully",
+      message: "subject removed successfully",
       removedSubject: removedSubject,
     });
   } catch (error) {
