@@ -1,4 +1,6 @@
 function getAbbreviation(input: string): string {
+  console.log(input);
+
   return input
     .split(" ") // Split by space
     .map((word) => word.replace(/[^a-zA-Z]/g, "")) // Remove special characters

@@ -290,7 +290,10 @@ async function createTutionTrans(
     recieverId: collageId,
     transactionId: transId,
   };
-  const newTutionFee = await tutionFeeRepository.create(tutionFeePayload);
+  const newTutionFee = await tutionFeeRepository.create(
+    tutionFeePayload,
+    collageId
+  );
   if (!newTutionFee) {
     throw new CustomError("tution fee not created", 500);
   }

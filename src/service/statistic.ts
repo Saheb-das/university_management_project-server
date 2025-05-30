@@ -131,6 +131,27 @@ async function getRevenueByYear(collageId: string, year?: string) {
   }
 }
 
+async function getRevenuesLastFiveYear(collageId: string, year?: string) {
+  try {
+    const collage = await collageRepository.findById(collageId);
+    if (!collage) {
+      throw new CustomError("collage not found", 404);
+    }
+
+    const yearlyRevenue = await revenueRepository.findLastFiveYearsRevenue(
+      collage.id
+    );
+    if (!yearlyRevenue) {
+      throw new CustomError("revenue not found", 404);
+    }
+
+    return yearlyRevenue;
+  } catch (error) {
+    console.log("Error fetching revenue stats", error);
+    return null;
+  }
+}
+
 async function getSatisfyStatsByStudent(collageId: string, year?: string) {
   try {
     const collage = await collageRepository.findById(collageId);
@@ -203,6 +224,7 @@ export default {
   getPlacementGroupByDept,
   getSatisfyStatsByStudent,
   getSatisfyRateByPrevAndCurrYear,
+  getRevenuesLastFiveYear,
   getRevenueByYear,
   getStuffStats,
 };

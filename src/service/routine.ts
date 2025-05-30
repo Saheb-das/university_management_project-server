@@ -1,6 +1,7 @@
 // internal import
 import routineRepository, { RoutineWithDetails } from "../repository/routine";
 import batchRepository from "../repository/batch";
+import semesterRepository from "../repository/semester";
 
 // types import
 import { Day, Routine } from "@prisma/client";
@@ -49,7 +50,8 @@ async function createRoutine(
 }
 
 async function getRoutineByBatchName(
-  batchName: string
+  batchName: string,
+  semId: string
 ): Promise<RoutineWithDetails | null> {
   try {
     const isExist = await batchRepository.findByName(batchName);
@@ -57,7 +59,15 @@ async function getRoutineByBatchName(
       throw new CustomError("batch not found", 404);
     }
 
-    const routine = await routineRepository.findByProps("batchId", isExist.id);
+    const sem = await semesterRepository.findById(semId);
+    if (!sem) {
+      throw new CustomError("semester not found", 404);
+    }
+
+    const routine = await routineRepository.findByProps([
+      { field: "batchId", value: isExist.id },
+      { field: "semesterId", value: semId },
+    ]);
     if (!routine) {
       throw new CustomError("routine not found", 404);
     }

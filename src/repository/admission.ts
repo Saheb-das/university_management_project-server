@@ -164,7 +164,45 @@ async function create(
   return result;
 }
 
-async function findAllByStuffId(stuffId: string): Promise<Admission[] | null> {
+export type TAdmissionWithDetails = Prisma.AdmissionGetPayload<{
+  include: {
+    student: {
+      select: {
+        profile: {
+          select: {
+            user: {
+              select: {
+                firstName: true;
+                lastName: true;
+              };
+            };
+          };
+        };
+      };
+    };
+    degree: {
+      select: {
+        type: true;
+        id: true;
+      };
+    };
+    department: {
+      select: {
+        type: true;
+        id: true;
+      };
+    };
+    course: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
+  };
+}>;
+async function findAllByStuffId(
+  stuffId: string
+): Promise<TAdmissionWithDetails[] | null> {
   const admissions = await prisma.admission.findMany({
     where: stuffId ? { counsellorId: stuffId } : undefined,
     include: {
@@ -194,13 +232,160 @@ async function findAllByStuffId(stuffId: string): Promise<Admission[] | null> {
           id: true,
         },
       },
+      course: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
     },
   });
 
   return admissions;
 }
 
+export type TAdmissionWithCommission = {
+  count: number;
+  sum: {
+    commission: number | null;
+  } | null;
+};
+async function findTotalAdmissionAndCommission(
+  stuffId: string
+): Promise<TAdmissionWithCommission | null> {
+  const data = await prisma.admission.aggregate({
+    where: { counsellorId: stuffId },
+    _count: true,
+    _sum: { commission: true },
+  });
+
+  return {
+    count: data._count,
+    sum: {
+      commission: data._sum?.commission ? Number(data._sum.commission) : null,
+    },
+  };
+}
+
+export type TAdmissionStats = {
+  year: number;
+  totalAdmissions: number;
+  totalCommission: string;
+};
+async function findLastFiveYearStats(
+  stuffId: string
+): Promise<TAdmissionStats[] | null> {
+  const currentYear = new Date().getFullYear();
+  const fromYear = currentYear - 4; // includes current year, so 5 years total
+
+  const stats = await prisma.admission.groupBy({
+    by: ["inYear"],
+    where: {
+      counsellorId: stuffId,
+      inYear: {
+        gte: fromYear,
+        lte: currentYear,
+      },
+    },
+    _count: {
+      id: true, // total admissions
+    },
+    _sum: {
+      commission: true, // total commission
+    },
+    orderBy: {
+      inYear: "asc",
+    },
+  });
+
+  const formattedStats = stats.map((entry) => ({
+    year: entry.inYear,
+    totalAdmissions: entry._count.id,
+    totalCommission: entry._sum.commission?.toString() || "0",
+  }));
+
+  return formattedStats;
+}
+
+export type TLastYearTopper = {
+  counsellorId: string;
+  name: string;
+  totalAdmissions: number;
+  totalCommission: string;
+};
+async function findTopThreeInLastYear(
+  collageId: string
+): Promise<TLastYearTopper[] | null> {
+  // get previous year
+  const lastYear = new Date().getFullYear() - 1;
+
+  // get 3 top consellors
+  const topCounsellors = await prisma.admission.groupBy({
+    by: ["counsellorId"],
+    where: {
+      inYear: lastYear,
+      department: {
+        collageId: collageId,
+      },
+    },
+    _count: {
+      id: true, // total admissions
+    },
+    _sum: {
+      commission: true, // total commission
+    },
+    orderBy: [
+      {
+        _sum: {
+          commission: "desc",
+        },
+      },
+    ],
+    take: 3,
+  });
+
+  // get together all id's of counsellor
+  const counsellorIds = topCounsellors.map((c) => c.counsellorId);
+
+  // fetch require details
+  const counsellorDetails = await prisma.stuff.findMany({
+    where: {
+      id: { in: counsellorIds },
+    },
+    select: {
+      id: true,
+      profile: {
+        select: {
+          user: {
+            select: {
+              firstName: true,
+              lastName: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // merge all details
+  const result = topCounsellors.map((entry) => {
+    const info = counsellorDetails.find((c) => c.id === entry.counsellorId);
+
+    return {
+      counsellorId: entry.counsellorId,
+      name: `${info?.profile.user.firstName} ${info?.profile.user.lastName}`,
+      totalAdmissions: entry._count.id,
+      totalCommission: entry._sum.commission!.toString(),
+    };
+  });
+
+  return result;
+}
+
 export default {
   findAllByStuffId,
+  findTotalAdmissionAndCommission,
+  findLastFiveYearStats,
+  findTopThreeInLastYear,
   create,
 };

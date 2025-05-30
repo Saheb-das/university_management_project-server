@@ -66,7 +66,9 @@ async function findAllByCollageId(
     where: {
       collageId: id,
     },
-    include: { degrees: includeDegree },
+    include: {
+      degrees: includeDegree,
+    },
   });
 
   return departments;
@@ -106,10 +108,35 @@ async function findByIdWithFilter(
   return department;
 }
 
+async function findByIdWithDegIdAndCourseId(
+  deptId: string,
+  degId: string,
+  courseId: string
+): Promise<Department | null> {
+  const department = await prisma.department.findFirst({
+    where: {
+      id: deptId,
+      degrees: {
+        some: {
+          id: degId,
+          courses: {
+            some: {
+              id: courseId,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  return department;
+}
+
 // export
 export default {
   create,
   findByTypeAndCollageId,
   findAllByCollageId,
   findByIdWithFilter,
+  findByIdWithDegIdAndCourseId,
 };

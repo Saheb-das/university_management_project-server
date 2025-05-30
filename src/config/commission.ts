@@ -30,6 +30,16 @@ export const commissionConfig = [
     },
   },
   {
+    courseName: "data science",
+    departmentType: "engineering",
+    degreeType: "bachelor",
+    totalFee: 300000,
+    commission: {
+      stuff: 6,
+      recommender: 2,
+    },
+  },
+  {
     courseName: "electronics & electric engineering",
     departmentType: "engineering",
     degreeType: "bachelor",

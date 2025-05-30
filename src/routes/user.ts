@@ -17,11 +17,11 @@ router.get("/teachers", userController.getTeacherUsers);
 
 router.get("/:id", userController.getUser);
 
-router.patch("/:id", userController.updateUser);
-
 router.patch("/:id/status", userController.updateUserStatus);
 
 router.patch("/:id/change-password", userController.updateUserPassword);
+
+router.patch("/:id", userController.updateUser);
 
 router.delete("/:id", userController.deleteUser);
 

@@ -1,6 +1,6 @@
 model Admission {
-    id         String @id @default(cuid())
-    commission String
+    id         String  @id @default(cuid())
+    commission Decimal @db.Decimal(10, 2)
     inYear     Int
 
     student   Student @relation(references: [id], fields: [studentId])

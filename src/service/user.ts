@@ -39,6 +39,8 @@ async function createUser(
       throw new CustomError("password not hashed", 500);
     }
 
+    console.log("collage id", collageId);
+
     const stuffPayload: TStuffClient = {
       firstName: payload.firstName,
       lastName: payload.lastName,

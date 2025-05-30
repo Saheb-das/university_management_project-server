@@ -16,6 +16,8 @@ router.get("/stuff", statsController.getStuffStats);
 
 router.get("/revenue", statsController.getRevenue);
 
+router.get("/revenues-range", statsController.getRevenuesLastFiveYear);
+
 router.get("/growth", statsController.getGrowth);
 
 router.get("/placement", statsController.getPlacementStats);

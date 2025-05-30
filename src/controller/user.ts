@@ -34,7 +34,7 @@ async function createUser(
 
     const isValid = stuffSchema.safeParse(userInfo);
     if (!isValid.success) {
-      console.log(isValid.error.message);
+      console.log(isValid.error);
 
       throw new CustomError("invalid input", 400, isValid.error);
     }

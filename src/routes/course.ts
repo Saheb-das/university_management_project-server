@@ -11,7 +11,7 @@ const router = express.Router();
 // routes
 router.post("/", courseController.createCourse);
 
-router.get("/", checkPermission("read_course"), courseController.getCourses);
+router.get("/", courseController.getCourses);
 
 router.get("/subjects", courseController.getSubjectsByCourseId);
 

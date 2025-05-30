@@ -45,11 +45,18 @@ async function createBatch(
   }
 }
 
+export interface IBatchQuery {
+  deptId: string;
+  degId: string;
+  courseId: string;
+}
 async function getBatches(
-  req: AuthRequest,
+  req: AuthRequest<{}, {}, IBatchQuery>,
   res: Response,
   next: NextFunction
 ): Promise<void> {
+  const query = req.query;
+
   try {
     if (!req.authUser) {
       throw new CustomError("unauthorized user", 401);
@@ -57,7 +64,7 @@ async function getBatches(
 
     const collageId = req.authUser.collageId;
 
-    const batches = await batchService.getAllBatches(collageId);
+    const batches = await batchService.getAllBatches(collageId, query);
     if (!batches) {
       throw new CustomError("batches not found", 404);
     }

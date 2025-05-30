@@ -1,5 +1,8 @@
 // internal import
-import studentRepository, { StudentWithBatch } from "../repository/student";
+import studentRepository, {
+  StudentWithBatch,
+  TStudentUpdateStatus,
+} from "../repository/student";
 import departmentRepository from "../repository/department";
 import degreeRepository from "../repository/degree";
 import userRepository from "../repository/user";
@@ -79,16 +82,15 @@ async function getAllStudentsByBatchId(
 async function changeActiveStatus(
   studentId: string,
   activeStatus: ActiveStatus
-): Promise<User | null> {
+): Promise<TStudentUpdateStatus | null> {
   try {
     const isExist = await studentRepository.findById(studentId);
     if (!isExist) {
       throw new CustomError("student not found", 404);
     }
 
-    const updatedStudent = await userRepository.updateStatus(
-      isExist.profile.user.id,
-      "student",
+    const updatedStudent = await studentRepository.updateStatus(
+      isExist.id,
       activeStatus
     );
     if (!updatedStudent) {
@@ -97,7 +99,7 @@ async function changeActiveStatus(
 
     return updatedStudent;
   } catch (error) {
-    console.log("Error update student's status");
+    console.log("Error update student's status", error);
     return null;
   }
 }

@@ -12,5 +12,14 @@ router.post("/", admissionController.createAdmission);
 
 router.get("/", admissionController.getAdmissions);
 
+router.get("/top-three", admissionController.getTopThreeInPrevYear);
+
+router.get(
+  "/:userId/admits-coms",
+  admissionController.getAdmissionsAndCommissions
+);
+
+router.get("/:userId/stats", admissionController.getPrevFiveYearsStats);
+
 // export
 export default router;

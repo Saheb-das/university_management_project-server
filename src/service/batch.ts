@@ -7,7 +7,7 @@ import batchRepository, { BatchWithSemesters } from "../repository/batch";
 
 // types import
 import { Batch } from "@prisma/client";
-import { IBatchClient } from "../controller/batch";
+import { IBatchClient, IBatchQuery } from "../controller/batch";
 import { getAbbreviation } from "../utils/titleGenerator";
 
 export interface IBatch {
@@ -67,13 +67,25 @@ async function createBatch(batchInfo: IBatchClient): Promise<Batch | null> {
   }
 }
 
-async function getAllBatches(collageId: string): Promise<Batch[] | null> {
+async function getAllBatches(
+  collageId: string,
+  query = {} as IBatchQuery
+): Promise<Batch[] | null> {
   try {
     if (!collageId) {
       throw new CustomError("collage id required", 403);
     }
 
-    const batches = await batchRepository.findAll(collageId);
+    const isDept = await departmentRepository.findByIdWithDegIdAndCourseId(
+      query.deptId,
+      query.degId,
+      query.courseId
+    );
+    if (!isDept) {
+      throw new CustomError("department not found");
+    }
+
+    const batches = await batchRepository.findAll(collageId, query);
     if (!batches) {
       throw new CustomError("batches not found", 404);
     }

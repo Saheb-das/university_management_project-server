@@ -77,17 +77,17 @@ async function getGrowth(
 
     const collageId = req.authUser.collageId;
 
-    const collageGrowth = await statisticService.getGrowthByYearRange(
+    const studentGrowth = await statisticService.getGrowthByYearRange(
       collageId
     );
-    if (!collageGrowth) {
+    if (!studentGrowth) {
       throw new CustomError("collage growth not found", 404);
     }
 
     res.status(200).json({
       success: true,
       message: "collage growth stats find successfully",
-      growth: collageGrowth,
+      growth: studentGrowth,
     });
   } catch (error) {
     next(error);
@@ -129,6 +129,35 @@ async function getRevenue(
       success: true,
       message: "collage growth stats find successfully",
       revenue: collageRevenue,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function getRevenuesLastFiveYear(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthrized user", 401);
+    }
+
+    const collageId = req.authUser.collageId;
+
+    const collageRevenue = await statisticService.getRevenuesLastFiveYear(
+      collageId
+    );
+    if (!collageRevenue) {
+      throw new CustomError("collage revenue not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "collage revenues stats find successfully",
+      revenues: collageRevenue,
     });
   } catch (error) {
     next(error);
@@ -286,4 +315,5 @@ export default {
   getSatisfyStatsByStudent,
   getSatisfyRateStats,
   getStuffStats,
+  getRevenuesLastFiveYear,
 };

@@ -3,7 +3,7 @@ import prisma from "../lib/prisma";
 
 // types import
 import { IStudentFilter } from "../controller/student";
-import { Prisma, Student } from "@prisma/client";
+import { ActiveStatus, Prisma, Student } from "@prisma/client";
 
 async function findAll(filter: IStudentFilter): Promise<Student[] | null> {
   const whereClause =
@@ -110,10 +110,51 @@ async function findByUserId(userId: string): Promise<StudentWithBatch | null> {
   return student;
 }
 
+export type TStudentUpdateStatus = Prisma.StudentGetPayload<{
+  include: {
+    profile: {
+      select: {
+        user: true;
+      };
+    };
+  };
+}>;
+async function updateStatus(
+  id: string,
+  newStatus: ActiveStatus
+): Promise<TStudentUpdateStatus | null> {
+  const updatedStudent = await prisma.student.update({
+    where: {
+      id: id,
+    },
+    data: {
+      profile: {
+        update: {
+          user: {
+            update: {
+              activeStatus: newStatus,
+            },
+          },
+        },
+      },
+    },
+    include: {
+      profile: {
+        select: {
+          user: true,
+        },
+      },
+    },
+  });
+
+  return updatedStudent;
+}
+
 // export
 export default {
   findAll,
   findById,
   findAllByBatchId,
   findByUserId,
+  updateStatus,
 };

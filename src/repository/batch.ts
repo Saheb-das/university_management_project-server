@@ -1,6 +1,7 @@
 import { Batch, Prisma, Course, Department } from "@prisma/client";
 import prisma from "../lib/prisma";
 import { IBatch } from "../service/batch";
+import { IBatchQuery } from "../controller/batch";
 
 type FindByNameOptions = {
   includeDepartment?: boolean;
@@ -32,13 +33,33 @@ async function create(payload: IBatch): Promise<Batch | null> {
   return newBatch;
 }
 
-async function findAll(collageId: string): Promise<Batch[] | null> {
-  const batches = await prisma.batch.findMany({
-    where: {
+async function findAll(
+  collageId: string,
+  query: IBatchQuery
+): Promise<Batch[] | null> {
+  let whererClause: any;
+
+  if (query) {
+    whererClause = {
+      departmentId: query.deptId,
       department: {
         collageId: collageId,
       },
-    },
+      courseId: query.courseId,
+      course: {
+        degreeId: query.degId,
+      },
+    };
+  } else {
+    whererClause = {
+      department: {
+        collageId: collageId,
+      },
+    };
+  }
+
+  const batches = await prisma.batch.findMany({
+    where: whererClause,
   });
 
   return batches;

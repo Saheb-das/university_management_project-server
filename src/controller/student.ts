@@ -106,7 +106,7 @@ async function changeStatus(
     res.status(200).json({
       success: true,
       message: "students updated successfully",
-      updatedStudent: updateStudent,
+      student: updateStudent,
     });
   } catch (error) {
     next(error);

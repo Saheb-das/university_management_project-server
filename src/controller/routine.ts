@@ -226,11 +226,12 @@ async function getRoutines() {}
 async function getRoutine() {}
 
 async function getRoutineByBatchName(
-  req: AuthRequest<{}, { batch: string }>,
+  req: AuthRequest<{}, { batch: string }, { sem: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> {
   const { batch } = req.params;
+  const { sem } = req.query;
   try {
     if (!req.authUser) {
       throw new CustomError("unauthorized user", 401);
@@ -240,7 +241,11 @@ async function getRoutineByBatchName(
       throw new CustomError("batch name required", 400);
     }
 
-    const routine = await routineService.getRoutineByBatchName(batch);
+    if (!sem) {
+      throw new CustomError("semester id required", 404);
+    }
+
+    const routine = await routineService.getRoutineByBatchName(batch, sem);
     if (!routine) {
       throw new CustomError("routine not found", 404);
     }

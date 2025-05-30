@@ -1,7 +1,13 @@
 // internal import
 import { CustomError } from "../lib/error";
 import stuffRepository from "../repository/stuff";
-import admissionRepository from "../repository/admission";
+import collageRepository from "../repository/collage";
+import admissionRepository, {
+  TAdmissionStats,
+  TAdmissionWithCommission,
+  TAdmissionWithDetails,
+  TLastYearTopper,
+} from "../repository/admission";
 import batchRepository from "../repository/batch";
 import { calcCommission } from "../utils/commission";
 import { genHashedPassword } from "../lib/password";
@@ -158,14 +164,17 @@ async function createAdmission(
 }
 
 async function getAllAdmissions(
-  stuffId: string = ""
-): Promise<Admission[] | null> {
+  userId: string = ""
+): Promise<TAdmissionWithDetails[] | null> {
   try {
-    if (stuffId) {
-      const stuff = await stuffRepository.findById(stuffId);
+    let stuffId = "";
+    if (userId) {
+      const stuff = await stuffRepository.findByUserId(userId);
       if (!stuff) {
         throw new CustomError("stuff not found", 404);
       }
+
+      stuffId = stuff.id;
     }
 
     const admissions = await admissionRepository.findAllByStuffId(stuffId);
@@ -180,8 +189,77 @@ async function getAllAdmissions(
   }
 }
 
+async function getTotalAdmissionAndCommission(
+  userId: string
+): Promise<TAdmissionWithCommission | null> {
+  try {
+    const stuff = await stuffRepository.findByUserId(userId);
+    if (!stuff) {
+      throw new CustomError("stuff not found", 404);
+    }
+
+    const totalAddmitAndCom =
+      await admissionRepository.findTotalAdmissionAndCommission(stuff.id);
+    if (!totalAddmitAndCom) {
+      throw new CustomError("total admission and commission not found", 404);
+    }
+
+    return totalAddmitAndCom;
+  } catch (error) {
+    console.log("Error fetch total admission and commission", error);
+    return null;
+  }
+}
+
+async function getLastFiveYearsStats(
+  userId: string
+): Promise<TAdmissionStats[] | null> {
+  try {
+    const stuff = await stuffRepository.findByUserId(userId);
+    if (!stuff) {
+      throw new CustomError("stuff not found", 404);
+    }
+
+    const stats = await admissionRepository.findLastFiveYearStats(stuff.id);
+    if (!stats) {
+      throw new CustomError("last five years not found", 404);
+    }
+
+    return stats;
+  } catch (error) {
+    console.log("Error fetching last five years stats", error);
+    return null;
+  }
+}
+
+async function getTopThreeInLastYear(
+  collageId: string
+): Promise<TLastYearTopper[] | null> {
+  try {
+    const collage = await collageRepository.findById(collageId);
+    if (!collage) {
+      throw new CustomError("collage not found", 404);
+    }
+
+    const topThree = await admissionRepository.findTopThreeInLastYear(
+      collage.id
+    );
+    if (!topThree) {
+      throw new CustomError("top three counsellors not found", 404);
+    }
+
+    return topThree;
+  } catch (error) {
+    console.log("Error fetchingtop three counsellors", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createAdmission,
   getAllAdmissions,
+  getTotalAdmissionAndCommission,
+  getLastFiveYearsStats,
+  getTopThreeInLastYear,
 };

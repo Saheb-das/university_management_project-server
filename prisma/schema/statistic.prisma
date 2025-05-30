@@ -66,6 +66,8 @@ model SatisfactionSurvey {
 
     Collage   Collage @relation(fields: [collageId], references: [id])
     collageId String
+
+    @@unique([score, year, collageId])
 }
 
 // Placement by Department
