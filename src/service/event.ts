@@ -65,8 +65,28 @@ async function getAllEvents(
   }
 }
 
+async function getUpcomingEvents(collageId: string): Promise<Event[] | null> {
+  try {
+    const collage = await collageRepository.findById(collageId);
+    if (!collage) {
+      throw new CustomError("collage not found", 404);
+    }
+
+    const events = await eventRepository.findUpcomingEvents(collage.id);
+    if (!events) {
+      throw new CustomError("upcoming events not found", 404);
+    }
+
+    return events;
+  } catch (error) {
+    console.log("Error fetching upcoming events", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createEvent,
   getAllEvents,
+  getUpcomingEvents,
 };

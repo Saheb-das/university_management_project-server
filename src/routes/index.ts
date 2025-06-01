@@ -47,7 +47,7 @@ router.use("/notes", noteRoutes);
 router.use("/forms", authenticateHTTP, formRoutes);
 router.use("/stats", authenticateHTTP, statsRoutes);
 router.use("/projects", projectRoutes);
-router.use("/events", eventRoutes);
+router.use("/events", authenticateHTTP, eventRoutes);
 router.use("/results", authenticateHTTP, resultRoutes);
 router.use("/uploads", authenticateHTTP, uploadRoutes);
 

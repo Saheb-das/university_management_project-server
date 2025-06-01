@@ -61,8 +61,27 @@ async function findAllByProps(
   return events;
 }
 
+async function findUpcomingEvents(collageId: string): Promise<Event[] | null> {
+  const todayISO = new Date().toISOString();
+
+  const events = await prisma.event.findMany({
+    where: {
+      collageId: collageId,
+      date: {
+        gte: todayISO, // events today or in the future
+      },
+    },
+    orderBy: {
+      date: "asc", // sort by closest date first
+    },
+  });
+
+  return events;
+}
+
 // export
 export default {
   create,
   findAllByProps,
+  findUpcomingEvents,
 };

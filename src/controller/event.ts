@@ -21,6 +21,8 @@ async function createEvent(
 
     const isValid = eventSchema.safeParse(req.body);
     if (!isValid.success) {
+      console.log(isValid.error);
+
       throw new CustomError("invalid input", 400, isValid.error);
     }
 
@@ -32,7 +34,7 @@ async function createEvent(
     res.status(200).json({
       success: true,
       message: "event created successfully",
-      newevent: newEvent,
+      newEvent: newEvent,
     });
   } catch (error) {
     next(error);
@@ -72,6 +74,33 @@ async function getEvents(
   }
 }
 
+async function getUpcomingEvents(
+  req: AuthRequest,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    const collageId = req.authUser.collageId;
+
+    const events = await eventService.getUpcomingEvents(collageId);
+    if (!events) {
+      throw new CustomError("events not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "upcoming events fetched successfully",
+      events: events,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function getEvent() {}
 async function updateEvent() {}
 async function deleteEvent() {}
@@ -80,6 +109,7 @@ async function deleteEvent() {}
 export default {
   createEvent,
   getEvents,
+  getUpcomingEvents,
   getEvent,
   updateEvent,
   deleteEvent,

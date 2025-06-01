@@ -13,10 +13,10 @@ const eventTypeEnum = z.enum([
 export const eventSchema = z.object({
   title: z.string().min(2, "atleast 2 char required"),
   date: z.string().min(10, "maintain dd-mm-yyyy format"),
-  time: z.string().min(6, "maintain hh:mm PM/AM format"),
+  time: z.string().min(4, "maintain hh:mm format"),
   place: z.string().min(2, "atleast 2 char required"),
-  url: z.string().url().optional(),
-  avatar: z.string().url().optional(),
+  url: z.string().optional(),
+  avatar: z.string().optional(),
   type: eventTypeEnum,
 });
 

@@ -12,6 +12,8 @@ router.post("/", eventController.createEvent);
 
 router.get("/", eventController.getEvents);
 
+router.get("/upcoming", eventController.getUpcomingEvents);
+
 router.get("/:id", eventController.getEvent);
 
 router.patch("/:id", eventController.updateEvent);
