@@ -7,7 +7,7 @@ import batchRepository, { BatchWithSemesters } from "../repository/batch";
 
 // types import
 import { Batch } from "@prisma/client";
-import { IBatchClient, IBatchQuery } from "../controller/batch";
+import { IBatchClient, IBatchDeptDeg, IBatchQuery } from "../controller/batch";
 import { getAbbreviation } from "../utils/titleGenerator";
 
 export interface IBatch {
@@ -97,6 +97,44 @@ async function getAllBatches(
   }
 }
 
+async function getAllBatchesByDeptDeg(
+  collageId: string,
+  query: IBatchDeptDeg
+): Promise<Batch[] | null> {
+  try {
+    if (!collageId) {
+      throw new CustomError("collage id required", 403);
+    }
+
+    if (!query.deptId || !query.degId) {
+      throw new CustomError("departmant id and degree id required");
+    }
+
+    const isDeg = await degreeRepository.findByIdWithFilter(
+      query.degId,
+      "departmentId",
+      query.deptId
+    );
+    if (!isDeg) {
+      throw new CustomError("degree not found");
+    }
+
+    const batches = await batchRepository.findAllByDeptDeg(
+      collageId,
+      query.deptId,
+      query.degId
+    );
+    if (!batches) {
+      throw new CustomError("batches not found", 404);
+    }
+
+    return batches;
+  } catch (error) {
+    console.log("Error fetching batches", error);
+    return null;
+  }
+}
+
 interface IBatchOpts {
   department: boolean;
   course: boolean;
@@ -148,4 +186,5 @@ export default {
   getAllBatches,
   getBatchByName,
   getBatchWithSemesters,
+  getAllBatchesByDeptDeg,
 };

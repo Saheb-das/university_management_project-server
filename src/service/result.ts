@@ -94,8 +94,36 @@ async function getResultByStudentId(
   }
 }
 
+async function getResultByStudentExamSem(
+  studentId: string,
+  examId: string,
+  semId: string
+): Promise<Result[] | null> {
+  try {
+    const student = await studentRepository.findById(studentId);
+    if (!student) {
+      throw new CustomError("student not found", 404);
+    }
+
+    const results = await resultRepository.findByStudentExamSemIds(
+      studentId,
+      examId,
+      semId
+    );
+    if (!results || results.length === 0) {
+      throw new CustomError("results not found", 404);
+    }
+
+    return results;
+  } catch (error) {
+    console.log("Error fetching result", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createResult,
   getResultByStudentId,
+  getResultByStudentExamSem,
 };

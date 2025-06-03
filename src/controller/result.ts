@@ -43,14 +43,14 @@ async function createResult(
     res.status(200).json({
       success: true,
       message: "result created successfully",
-      result: newResult,
+      results: newResult,
     });
   } catch (error) {
     next(error);
   }
 }
 
-async function getResultByStudentIdAndExam(
+async function getResultByStudentIdAndSem(
   req: AuthRequest<{}, { studentId: string }, { sem: string }>,
   res: Response,
   next: NextFunction
@@ -85,11 +85,55 @@ async function getResultByStudentIdAndExam(
   }
 }
 
+async function getResultByStudentExamSem(
+  req: AuthRequest<
+    {},
+    { studentId: string; examId: string },
+    { semId: string }
+  >,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { studentId, examId } = req.params;
+  const { semId } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthrized user", 401);
+    }
+
+    if (!studentId || !examId) {
+      throw new CustomError("student id and examId required", 400);
+    }
+
+    if (!semId) {
+      throw new CustomError("sem no required", 400);
+    }
+
+    const result = await resultService.getResultByStudentExamSem(
+      studentId,
+      examId,
+      semId
+    );
+    if (!result) {
+      throw new CustomError("result not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "result fetched successfully",
+      results: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function updateResult() {}
 
 // export
 export default {
   createResult,
-  getResultByStudentIdAndExam,
+  getResultByStudentIdAndSem,
   updateResult,
+  getResultByStudentExamSem,
 };

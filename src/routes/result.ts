@@ -11,9 +11,11 @@ const router = express.Router();
 router.post("/", resultController.createResult);
 
 router.get(
-  "/students/:studentId",
-  resultController.getResultByStudentIdAndExam
+  "/students/:studentId/exam/:examId",
+  resultController.getResultByStudentExamSem
 );
+
+router.get("/students/:studentId", resultController.getResultByStudentIdAndSem);
 
 router.patch("/:id", resultController.updateResult);
 

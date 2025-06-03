@@ -167,6 +167,28 @@ async function findByBatchNameWithSemesters(
   return batchWithSems;
 }
 
+async function findAllByDeptDeg(
+  collageId: string,
+  deptId: string,
+  degId: string
+): Promise<Batch[] | null> {
+  const batches = await prisma.batch.findMany({
+    where: {
+      departmentId: deptId,
+      department: {
+        collageId: collageId,
+        degrees: {
+          some: {
+            id: degId,
+          },
+        },
+      },
+    },
+  });
+
+  return batches;
+}
+
 // export
 export default {
   create,
@@ -176,4 +198,5 @@ export default {
   findByIdWithSemesters,
   findAll,
   findByBatchNameWithSemesters,
+  findAllByDeptDeg,
 };

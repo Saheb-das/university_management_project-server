@@ -1,5 +1,6 @@
 import { Result } from "@prisma/client";
 import prisma from "../lib/prisma";
+import exam from "./exam";
 
 type TSubject = {
   id: string;
@@ -20,9 +21,19 @@ async function create(payload: TResult): Promise<Result[] | null> {
     let resultArr: Result[] = [];
 
     for (const sub of payload.subjects) {
-      // create single result
-      const newResult = await tx.result.create({
-        data: {
+      const upsertedResult = await tx.result.upsert({
+        where: {
+          unique_result_entry: {
+            studentId: payload.studentId,
+            subjectId: sub.id,
+            examId: payload.examId,
+            semesterId: payload.semesterId,
+          },
+        },
+        update: {
+          marks: sub.marks, // update only marks
+        },
+        create: {
           marks: sub.marks,
           batchId: payload.batchId,
           examId: payload.examId,
@@ -32,11 +43,7 @@ async function create(payload: TResult): Promise<Result[] | null> {
         },
       });
 
-      if (!newResult) {
-        throw new Error("result creation failed");
-      }
-
-      resultArr.push(newResult);
+      resultArr.push(upsertedResult);
     }
 
     return resultArr;
@@ -81,8 +88,25 @@ async function findAllByStudentIdAndSemNo(
   return results;
 }
 
+async function findByStudentExamSemIds(
+  studentId: string,
+  examId: string,
+  semId: string
+): Promise<Result[] | null> {
+  const results = await prisma.result.findMany({
+    where: {
+      studentId: studentId,
+      examId: examId,
+      semesterId: semId,
+    },
+  });
+
+  return results;
+}
+
 // export
 export default {
   create,
   findAllByStudentIdAndSemNo,
+  findByStudentExamSemIds,
 };

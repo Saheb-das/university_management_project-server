@@ -13,6 +13,8 @@ router.post("/", batchController.createBatch);
 
 router.get("/", batchController.getBatches);
 
+router.get("/dept-deg", batchController.getBatchesByDeptDeg);
+
 router.get("/:batchName", batchController.getBatchByName);
 
 router.get("/:id/semesters", batchController.getBatchWithSemesters);

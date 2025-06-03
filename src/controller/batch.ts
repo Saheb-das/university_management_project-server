@@ -79,6 +79,43 @@ async function getBatches(
   }
 }
 
+export interface IBatchDeptDeg {
+  deptId: string;
+  degId: string;
+}
+async function getBatchesByDeptDeg(
+  req: AuthRequest<{}, {}, IBatchDeptDeg>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const query = req.query;
+
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!query.deptId || !query.degId) {
+      throw new CustomError("department id and degree id required");
+    }
+
+    const collageId = req.authUser.collageId;
+
+    const batches = await batchService.getAllBatchesByDeptDeg(collageId, query);
+    if (!batches) {
+      throw new CustomError("batches not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "batches fetch successfully",
+      batches: batches,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 interface IOptions {
   department: string;
   course: string;
@@ -157,4 +194,5 @@ export default {
   getBatches,
   getBatchByName,
   getBatchWithSemesters,
+  getBatchesByDeptDeg,
 };

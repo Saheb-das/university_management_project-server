@@ -11,7 +11,7 @@ import { CustomError } from "../lib/error";
 
 // types import
 import { ActiveStatus, Student, User } from "@prisma/client";
-import { IStudentFilter } from "../controller/student";
+import { IStudentFilter, IStudentIdentifier } from "../controller/student";
 
 async function getAllStudents(
   studentFilter: IStudentFilter
@@ -124,10 +124,33 @@ async function getStudentByUserId(
   }
 }
 
+async function updateStudentRollAndRegById(
+  studentId: string,
+  data: IStudentIdentifier
+): Promise<Student | null> {
+  try {
+    const student = await studentRepository.findById(studentId);
+    if (!student) {
+      throw new CustomError("student not found", 404);
+    }
+
+    const updated = await studentRepository.updateRollAndReg(studentId, data);
+    if (!updated) {
+      throw new CustomError("student not updated", 500);
+    }
+
+    return updated;
+  } catch (error) {
+    console.log("Error updating roll and reg no", error);
+    return null;
+  }
+}
+
 // export
 export default {
   getAllStudents,
   changeActiveStatus,
   getAllStudentsByBatchId,
   getStudentByUserId,
+  updateStudentRollAndRegById,
 };

@@ -2,7 +2,7 @@
 import prisma from "../lib/prisma";
 
 // types import
-import { IStudentFilter } from "../controller/student";
+import { IStudentFilter, IStudentIdentifier } from "../controller/student";
 import { ActiveStatus, Prisma, Student } from "@prisma/client";
 
 async function findAll(filter: IStudentFilter): Promise<Student[] | null> {
@@ -43,6 +43,24 @@ async function findAllByBatchId(batchId: string): Promise<Student[] | null> {
               id: true,
               firstName: true,
               lastName: true,
+            },
+          },
+        },
+      },
+      department: {
+        select: {
+          id: true,
+          type: true,
+        },
+      },
+      course: {
+        select: {
+          id: true,
+          name: true,
+          degree: {
+            select: {
+              id: true,
+              type: true,
             },
           },
         },
@@ -150,6 +168,18 @@ async function updateStatus(
   return updatedStudent;
 }
 
+async function updateRollAndReg(
+  studentId: string,
+  data: IStudentIdentifier
+): Promise<Student | null> {
+  const updated = await prisma.student.update({
+    where: { id: studentId },
+    data: { rollNo: data.rollNo, registretionNo: data.regNo },
+  });
+
+  return updated;
+}
+
 // export
 export default {
   findAll,
@@ -157,4 +187,5 @@ export default {
   findAllByBatchId,
   findByUserId,
   updateStatus,
+  updateRollAndReg,
 };

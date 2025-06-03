@@ -113,9 +113,53 @@ async function changeStatus(
   }
 }
 
+export interface IStudentIdentifier {
+  rollNo: string;
+  regNo: string;
+}
+async function updateStudentRollAndRegById(
+  req: AuthRequest<IStudentIdentifier, { id: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { rollNo, regNo } = req.body;
+  const { id: studentId } = req.params;
+
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!rollNo || !regNo) {
+      throw new CustomError("roll and registrantion number required", 400);
+    }
+
+    if (!studentId) {
+      throw new CustomError("student id required", 400);
+    }
+
+    const updateStudent = await studentService.updateStudentRollAndRegById(
+      studentId,
+      req.body
+    );
+    if (!updateStudent) {
+      throw new CustomError("student not updated", 500);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "students updated successfully",
+      student: updateStudent,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // export
 export default {
   getStudents,
   changeStatus,
   getStudentsByBatchId,
+  updateStudentRollAndRegById,
 };
