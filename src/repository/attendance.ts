@@ -15,7 +15,7 @@ async function createMany(
   attendanceArr: TAttendanceArr[]
 ): Promise<Attendance[] | null> {
   const result = await prisma.$transaction(async (tx) => {
-    let newAttendances: any;
+    let newAttendances: any = [];
     for (const att of attendanceArr) {
       const newAtt = await tx.attendance.create({
         data: {

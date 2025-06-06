@@ -40,7 +40,7 @@ router.use("/students", authenticateHTTP, studentRoutes);
 router.use("/routines", authenticateHTTP, routineRoutes);
 router.use("/notes", authenticateHTTP, noteRoutes);
 router.use("/exams", authenticateHTTP, examRoutes);
-router.use("/attendances", attendanceRoutes);
+router.use("/attendances", authenticateHTTP, attendanceRoutes);
 router.use("/batches", authenticateHTTP, batchRoutes);
 router.use("/forms", authenticateHTTP, formRoutes);
 router.use("/stats", authenticateHTTP, statsRoutes);
