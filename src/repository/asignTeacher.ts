@@ -97,12 +97,18 @@ async function findAllSubjectsByTeacherId(
   return subjects;
 }
 
-type AsignTeacherWithBatch = Prisma.AsignTeacherGetPayload<{
+export type AsignTeacherWithBatch = Prisma.AsignTeacherGetPayload<{
   include: {
     batch: {
       select: {
         id: true;
         name: true;
+      };
+    };
+    semester: {
+      select: {
+        id: true;
+        semNo: true;
       };
     };
   };
@@ -120,6 +126,12 @@ async function findAllByTeacherId(
         select: {
           id: true,
           name: true,
+        },
+      },
+      semester: {
+        select: {
+          id: true,
+          semNo: true,
         },
       },
     },

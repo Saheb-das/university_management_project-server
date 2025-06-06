@@ -1,4 +1,4 @@
-import { Note } from "@prisma/client";
+import { Note, Prisma } from "@prisma/client";
 import prisma from "../lib/prisma";
 
 export interface INote {
@@ -66,10 +66,28 @@ async function findAllByTeacherId(teacherId: string): Promise<Note[] | null> {
   return notes;
 }
 
-async function findAllByBatchId(batchId: string): Promise<Note[] | null> {
+export type TNoteWithSub = Prisma.NoteGetPayload<{
+  include: {
+    subject: {
+      select: {
+        name: true;
+      };
+    };
+  };
+}>;
+async function findAllByBatchId(
+  batchId: string
+): Promise<TNoteWithSub[] | null> {
   const notes = await prisma.note.findMany({
     where: {
       batchId: batchId,
+    },
+    include: {
+      subject: {
+        select: {
+          name: true,
+        },
+      },
     },
   });
 

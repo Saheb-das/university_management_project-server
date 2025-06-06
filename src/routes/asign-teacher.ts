@@ -10,6 +10,8 @@ const router = express.Router();
 // routes
 router.get("/:teacherId/subjects", asignTeacherController.getSubjects);
 
+router.get("/batches", asignTeacherController.getBatchesByTeacherUserId);
+
 router.post("/:teacherId", asignTeacherController.asignTeacher);
 
 router.delete("/:teacherId", asignTeacherController.removeSubjectFromTeacher);

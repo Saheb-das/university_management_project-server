@@ -8,15 +8,13 @@ import noteController from "../controller/note";
 const router = express.Router();
 
 // routes
-router.post("/", noteController.createNote);
+router.post("/materials", noteController.createMaterial);
 
-router.get("/", noteController.getNotes);
+router.get("/materials/batches/:batchId", noteController.getNotesByBatchId);
 
-router.get("/:id", noteController.getNote);
+router.get("/materials/:teacherId", noteController.getNotesByTeacherId);
 
-router.patch("/:id", noteController.updateNote);
-
-router.delete("/:id", noteController.deleteNote);
+router.get("/materials/:noteId/doc", noteController.getNoteDoc);
 
 // export
 export default router;

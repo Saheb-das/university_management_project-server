@@ -8,7 +8,6 @@ import { CustomError } from "../lib/error";
 // types import
 import { Request } from "express";
 import { AuthRequest } from "../types";
-import { IMaterialQuery } from "../controller/studyroom";
 import { getFileName } from "../lib/fileName";
 
 const storage = multer.diskStorage({
@@ -36,13 +35,13 @@ const storage = multer.diskStorage({
   },
   filename: function (req: Request, file, cb) {
     try {
-      const authReq = req as unknown as AuthRequest<{}, {}, IMaterialQuery>;
+      const authReq = req as AuthRequest;
 
       if (!authReq.authUser) {
         throw new CustomError("unauthorized user", 401);
       }
 
-      const fileName = getFileName(file, authReq.authUser, req.query);
+      const fileName = getFileName(file, authReq.authUser);
 
       cb(null, fileName);
     } catch (error) {

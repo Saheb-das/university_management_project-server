@@ -1,20 +1,24 @@
 // internal import
 import stuffRepository from "../repository/stuff";
 import batchRepository from "../repository/batch";
-import noteRepository from "../repository/note";
+import noteRepository, { TNoteWithSub } from "../repository/note";
 import subjectRepository from "../repository/subject";
 import { CustomError } from "../lib/error";
 
 // types import
 import { Note } from "@prisma/client";
-import { IMaterialQuery } from "../controller/studyroom";
 import { INote } from "../repository/note";
 
+interface IPayload {
+  title: string;
+  batchName: string;
+  semNo: string;
+  subName: string;
+}
 async function createNote(
   userId: string,
-  title: string,
   filePath: string,
-  params: IMaterialQuery
+  data: IPayload
 ): Promise<Note | null> {
   try {
     const stuff = await stuffRepository.findByUserId(userId);
@@ -23,14 +27,14 @@ async function createNote(
     }
 
     const batchWithSem = await batchRepository.findByBatchNameWithSemesters(
-      params.batch
+      data.batchName
     );
     if (!batchWithSem) {
       throw new CustomError("batch with semester not found", 404);
     }
 
     const semester = batchWithSem.course.semesters.find((sem) => {
-      if (sem.semNo === Number(params.sem)) {
+      if (sem.semNo === Number(data.semNo)) {
         return sem;
       }
     });
@@ -44,7 +48,7 @@ async function createNote(
     }
 
     const subject = subjects.find((sub) => {
-      if (sub.name === params.sub) {
+      if (sub.name === data.subName) {
         return sub;
       }
     });
@@ -53,7 +57,7 @@ async function createNote(
     }
 
     const notePayload: INote = {
-      title: title,
+      title: data.title,
       batchId: batchWithSem.id,
       fileUrl: filePath,
       semesterId: semester.id,
@@ -106,7 +110,9 @@ async function getNoteDoc(noteId: string): Promise<string | null> {
   }
 }
 
-async function getNotesByBatchId(batchId: string): Promise<Note[] | null> {
+async function getNotesByBatchId(
+  batchId: string
+): Promise<TNoteWithSub[] | null> {
   try {
     const batch = await batchRepository.findById(batchId);
     if (!batch) {

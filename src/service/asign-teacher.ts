@@ -4,7 +4,9 @@ import stuffRepository from "../repository/stuff";
 import batchRepository from "../repository/batch";
 import semesterRepository from "../repository/semester";
 import subjectRepository from "../repository/subject";
-import asignTeacherRepository from "../repository/asignTeacher";
+import asignTeacherRepository, {
+  AsignTeacherWithBatch,
+} from "../repository/asignTeacher";
 import conversationRepository from "../repository/conversation";
 import participantRepository, {
   IParticipant,
@@ -120,6 +122,27 @@ async function getAllSubjects(
   }
 }
 
+async function getAllAsignsByTeacherId(
+  teacherId: string
+): Promise<AsignTeacher[] | null> {
+  try {
+    const teacher = await stuffRepository.findByIdAndRole(teacherId, "teacher");
+    if (!teacher) {
+      throw new CustomError("teacher not found", 404);
+    }
+
+    const asigns = await asignTeacherRepository.findAllByTeacherId(teacher.id);
+    if (!asigns) {
+      throw new CustomError("asigns not found", 404);
+    }
+
+    return asigns;
+  } catch (error) {
+    console.log("Error find asigns", error);
+    return null;
+  }
+}
+
 async function removeSubjectFromTeacher(
   teacherId: string,
   subjectId: string,
@@ -177,7 +200,7 @@ async function removeSubjectFromTeacher(
 
 async function getAllBatchesByTeacherUserId(
   userId: string
-): Promise<string[] | null> {
+): Promise<AsignTeacherWithBatch[] | null> {
   try {
     if (!userId) {
       throw new CustomError("user id required", 400);
@@ -195,15 +218,15 @@ async function getAllBatchesByTeacherUserId(
       throw new CustomError("asign teachers not found", 404);
     }
 
-    const batchesArr: string[] = [];
+    // const batchesArr: string[] = [];
 
-    for (const asignT of asignTeachers) {
-      if (!batchesArr.includes(asignT.batch.name)) {
-        batchesArr.push(asignT.batch.name);
-      }
-    }
+    // for (const asignT of asignTeachers) {
+    //   if (!batchesArr.includes(asignT.batch.name)) {
+    //     batchesArr.push(asignT.batch.name);
+    //   }
+    // }
 
-    return batchesArr;
+    return asignTeachers;
   } catch (error) {
     console.log("Error fetching asign teachers", error);
     return null;
@@ -215,5 +238,6 @@ export default {
   asignTeacher,
   getAllSubjects,
   getAllBatchesByTeacherUserId,
+  getAllAsignsByTeacherId,
   removeSubjectFromTeacher,
 };

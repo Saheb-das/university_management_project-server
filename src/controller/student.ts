@@ -2,12 +2,12 @@
 import { CustomError } from "../lib/error";
 import studentService from "../service/student";
 import { studentSearchFilter } from "../lib/filter";
+import { statusSchema } from "../zod/user";
 
 // types import
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "../types";
 import { ActiveStatus } from "@prisma/client";
-import { statusSchema } from "../zod/user";
 
 export interface IStudentFilter {
   deprt?: string;

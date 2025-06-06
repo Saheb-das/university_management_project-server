@@ -8,6 +8,8 @@ import { CustomError } from "../lib/error";
 // types import
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "../types";
+import { getFileName } from "../lib/fileName";
+import path from "path";
 
 async function changeAvatar(
   req: AuthRequest<{ oldPath: string }>,
@@ -87,6 +89,49 @@ async function changeLogo(
   }
 }
 
+interface IDocBody {
+  batchName: string;
+  semNo: string;
+  subName: string;
+}
+async function uploadNewDoc(
+  req: AuthRequest<IDocBody>,
+  res: Response,
+  next: NextFunction
+) {
+  const { batchName, semNo, subName } = req.body;
+  try {
+    if (!req.file) {
+      throw new CustomError("No file uploaded", 400);
+    }
+
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!batchName || !semNo || !subName) {
+      throw new CustomError("batch name, sem no and sub name required", 400);
+    }
+
+    const newFileName = getFileName(req.file, req.authUser, {
+      batch: batchName,
+      sem: semNo,
+      sub: subName,
+    });
+
+    const newPath = path.join("uploads/documents", newFileName);
+    fs.renameSync(req.file.path, newPath);
+
+    res.status(200).json({
+      success: true,
+      message: "document uploaded successfully",
+      docPath: newPath,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function changeUpload(
   req: AuthRequest<{ oldPath: string }>,
   res: Response,
@@ -106,8 +151,6 @@ async function changeUpload(
     if (!req.authUser) {
       throw new CustomError("unauthorized user", 401);
     }
-
-    const userId = req.authUser.id;
 
     const { filename, path } = req.file;
 
@@ -129,5 +172,6 @@ async function changeUpload(
 export default {
   changeAvatar,
   changeLogo,
+  uploadNewDoc,
   changeUpload, // it will be deleted
 };

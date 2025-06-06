@@ -82,6 +82,38 @@ async function getSubjects(
   }
 }
 
+async function getBatchesByTeacherUserId(
+  req: AuthRequest<{}, {}, { userId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { userId } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!userId) {
+      throw new CustomError("teacher stuff id required");
+    }
+
+    const batches = await asignTeacherService.getAllBatchesByTeacherUserId(
+      userId
+    );
+    if (!batches) {
+      throw new CustomError("batches not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "batches fetched successfully",
+      batches: batches,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function removeSubjectFromTeacher(
   req: AuthRequest<{}, { teacherId: string }, { subject: string }>,
   res: Response,
@@ -128,4 +160,5 @@ export default {
   asignTeacher,
   getSubjects,
   removeSubjectFromTeacher,
+  getBatchesByTeacherUserId,
 };
