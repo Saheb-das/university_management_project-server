@@ -27,11 +27,12 @@ model Semester {
     course   Course @relation(references: [id], fields: [courseId])
     courseId String
 
-    results       Result[]
-    attendances   Attendance[]
-    routines      Routine[]
-    asignTeachers AsignTeacher[]
-    notes         Note[]
+    results         Result[]
+    attendances     Attendance[]
+    routines        Routine[]
+    asignTeachers   AsignTeacher[]
+    notes           Note[]
+    currentSemester CurrentSemester[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
@@ -65,4 +66,22 @@ model Exam {
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+}
+
+model CurrentSemester {
+    id String @id @default(cuid())
+
+    student   Student @relation(references: [id], fields: [studentId])
+    studentId String
+
+    batch   Batch  @relation(references: [id], fields: [batchId])
+    batchId String
+
+    semester   Semester @relation(references: [id], fields: [semesterId])
+    semesterId String
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    @@unique([studentId, batchId])
 }

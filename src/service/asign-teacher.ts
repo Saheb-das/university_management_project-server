@@ -6,6 +6,7 @@ import semesterRepository from "../repository/semester";
 import subjectRepository from "../repository/subject";
 import asignTeacherRepository, {
   AsignTeacherWithBatch,
+  TeachersWithSub,
 } from "../repository/asignTeacher";
 import conversationRepository from "../repository/conversation";
 import participantRepository, {
@@ -218,17 +219,35 @@ async function getAllBatchesByTeacherUserId(
       throw new CustomError("asign teachers not found", 404);
     }
 
-    // const batchesArr: string[] = [];
-
-    // for (const asignT of asignTeachers) {
-    //   if (!batchesArr.includes(asignT.batch.name)) {
-    //     batchesArr.push(asignT.batch.name);
-    //   }
-    // }
-
     return asignTeachers;
   } catch (error) {
     console.log("Error fetching asign teachers", error);
+    return null;
+  }
+}
+
+async function getAllTeachersByBatchAndSemIds(
+  batchId: string,
+  semId: string
+): Promise<TeachersWithSub[] | null> {
+  try {
+    const batch = await batchRepository.findByIdAndSemId(batchId, semId);
+    if (!batch) {
+      throw new CustomError("batch not found", 404);
+    }
+
+    const asignedTeachers =
+      await asignTeacherRepository.findAllTeachersBybatchAndSemId(
+        batchId,
+        semId
+      );
+    if (asignedTeachers && asignedTeachers.length === 0) {
+      throw new CustomError("asigned teachers not found", 404);
+    }
+
+    return asignedTeachers;
+  } catch (error) {
+    console.log("Error fetching asigned teachers", error);
     return null;
   }
 }
@@ -239,5 +258,6 @@ export default {
   getAllSubjects,
   getAllBatchesByTeacherUserId,
   getAllAsignsByTeacherId,
+  getAllTeachersByBatchAndSemIds,
   removeSubjectFromTeacher,
 };

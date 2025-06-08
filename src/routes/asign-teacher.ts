@@ -12,6 +12,11 @@ router.get("/:teacherId/subjects", asignTeacherController.getSubjects);
 
 router.get("/batches", asignTeacherController.getBatchesByTeacherUserId);
 
+router.get(
+  "/batches/:batchId/sems/:semId",
+  asignTeacherController.getTeachersByBatchAndSem
+);
+
 router.post("/:teacherId", asignTeacherController.asignTeacher);
 
 router.delete("/:teacherId", asignTeacherController.removeSubjectFromTeacher);

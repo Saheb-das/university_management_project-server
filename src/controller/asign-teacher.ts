@@ -114,6 +114,37 @@ async function getBatchesByTeacherUserId(
   }
 }
 
+async function getTeachersByBatchAndSem(
+  req: AuthRequest<{}, { batchId: string; semId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { batchId, semId } = req.params;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!batchId || !semId) {
+      throw new CustomError("batch and sem id required");
+    }
+
+    const asignedTeachers =
+      await asignTeacherService.getAllTeachersByBatchAndSemIds(batchId, semId);
+    if (!asignedTeachers) {
+      throw new CustomError("asigned teachers not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "batches fetched successfully",
+      asignedTeachers: asignedTeachers,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function removeSubjectFromTeacher(
   req: AuthRequest<{}, { teacherId: string }, { subject: string }>,
   res: Response,
@@ -161,4 +192,5 @@ export default {
   getSubjects,
   removeSubjectFromTeacher,
   getBatchesByTeacherUserId,
+  getTeachersByBatchAndSem,
 };

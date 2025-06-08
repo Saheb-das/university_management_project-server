@@ -53,16 +53,51 @@ async function createAttendance(
   }
 }
 
-async function getAttendances() {}
-async function getAttendance() {}
-async function updateAttendance() {}
-async function deleteAttendance() {}
+async function getAttendanceCountByStudentId(
+  req: AuthRequest<
+    {},
+    { studentId: string },
+    { batchId: string; semId: string }
+  >,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { studentId } = req.params;
+  const { batchId, semId } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!studentId) {
+      throw new CustomError("student id required", 400);
+    }
+
+    if (!batchId || !semId) {
+      throw new CustomError("batch id and sem id required", 400);
+    }
+
+    const attendanceCount = await attendanceService.getAttendanceCount({
+      studentId,
+      batchId,
+      semesterId: semId,
+    });
+    if (!attendanceCount) {
+      throw new CustomError("attendanced not created", 500);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "attendance fetched successfully",
+      attendanceCount: attendanceCount,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 // export
 export default {
   createAttendance,
-  getAttendances,
-  getAttendance,
-  updateAttendance,
-  deleteAttendance,
+  getAttendanceCountByStudentId,
 };

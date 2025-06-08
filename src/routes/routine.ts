@@ -10,15 +10,9 @@ const router = express.Router();
 // routes
 router.post("/", routineController.createRoutine);
 
-router.get("/", routineController.getRoutines);
-
 router.get("/batch/:batch", routineController.getRoutineByBatchName);
 
-router.get("/:id", routineController.getRoutine);
-
-router.patch("/:id", routineController.updateRoutine);
-
-router.delete("/:id", routineController.deleteRoutine);
+router.get("/batch/:batchId/schedule", routineController.getScheduleByBatchId);
 
 // export
 export default router;

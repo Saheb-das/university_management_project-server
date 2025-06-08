@@ -44,7 +44,7 @@ router.use("/attendances", authenticateHTTP, attendanceRoutes);
 router.use("/batches", authenticateHTTP, batchRoutes);
 router.use("/forms", authenticateHTTP, formRoutes);
 router.use("/stats", authenticateHTTP, statsRoutes);
-router.use("/projects", projectRoutes);
+router.use("/projects", authenticateHTTP, projectRoutes);
 router.use("/events", authenticateHTTP, eventRoutes);
 router.use("/results", authenticateHTTP, resultRoutes);
 router.use("/uploads", authenticateHTTP, uploadRoutes);

@@ -99,6 +99,7 @@ model Student {
     studentsOnProjects StudentsOnProjects[]
     tutionFees         TutionFee[]
     admission          Admission?
+    currentSemester    CurrentSemester[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

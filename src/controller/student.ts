@@ -47,6 +47,37 @@ async function getStudents(
   }
 }
 
+async function getStudentUserByUserId(
+  req: AuthRequest<{}, { userId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { userId } = req.params;
+
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!userId) {
+      throw new CustomError("user id required", 400);
+    }
+
+    const student = await studentService.getStudentUserByUserId(userId);
+    if (!student) {
+      throw new CustomError("student not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "student fetched successfully",
+      student: student,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function getStudentsByBatchId(
   req: AuthRequest<{}, {}, { batch: string }>,
   res: Response,
@@ -162,4 +193,5 @@ export default {
   changeStatus,
   getStudentsByBatchId,
   updateStudentRollAndRegById,
+  getStudentUserByUserId,
 };

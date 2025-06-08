@@ -9,12 +9,13 @@ model Batch {
     course   Course @relation(references: [id], fields: [courseId])
     courseId String
 
-    students      Student[]
-    results       Result[]
-    attendances   Attendance[]
-    asignTeachers AsignTeacher[]
-    notes         Note[]
-    routine       Routine[]
+    students        Student[]
+    results         Result[]
+    attendances     Attendance[]
+    asignTeachers   AsignTeacher[]
+    notes           Note[]
+    routine         Routine[]
+    currentSemester CurrentSemester[]
 
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt

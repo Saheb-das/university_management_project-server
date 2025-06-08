@@ -3,7 +3,11 @@ import { CustomError } from "../lib/error";
 import batchRepository from "../repository/batch";
 import semesterRepository from "../repository/semester";
 import subjectRepository from "../repository/subject";
-import attendanceRepository from "../repository/attendance";
+import attendanceRepository, {
+  IAttendCount,
+  IAttendCountProps,
+} from "../repository/attendance";
+import studentRepository from "../repository/student";
 
 // types import
 import { Attendance } from "@prisma/client";
@@ -51,7 +55,40 @@ async function createAttendance(
   }
 }
 
+async function getAttendanceCount(
+  query: IAttendCountProps
+): Promise<IAttendCount | null> {
+  try {
+    const student = await studentRepository.findById(query.studentId);
+    if (!student) {
+      throw new CustomError("student not found", 404);
+    }
+
+    if (query.batchId !== student.batchId) {
+      throw new CustomError("invalid batch", 400);
+    }
+
+    const sem = await semesterRepository.findById(query.semesterId);
+    if (!sem) {
+      throw new CustomError("semester not found", 404);
+    }
+
+    const attendanceCount = await attendanceRepository.findByStudentIdAndCount(
+      query
+    );
+    if (!attendanceCount) {
+      throw new CustomError("attenances not count", 500);
+    }
+
+    return attendanceCount;
+  } catch (error) {
+    console.log("Error count attendance", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createAttendance,
+  getAttendanceCount,
 };

@@ -11,13 +11,10 @@ const router = express.Router();
 
 router.post("/", attendanceController.createAttendance);
 
-router.get("/", attendanceController.getAttendances);
-
-router.get("/:id", attendanceController.getAttendance);
-
-router.patch("/:id", attendanceController.updateAttendance);
-
-router.delete("/:id", attendanceController.deleteAttendance);
+router.get(
+  "/students/:studentId",
+  attendanceController.getAttendanceCountByStudentId
+);
 
 // exoprt
 export default router;

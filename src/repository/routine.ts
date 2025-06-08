@@ -5,46 +5,6 @@ import prisma from "../lib/prisma";
 import { Day, Prisma, Routine } from "@prisma/client";
 import { IRoutineClient } from "../controller/routine";
 
-// async function create(payload: IRoutineClient): Promise<Routine | null> {
-//   const result = await prisma.$transaction(async (tx) => {
-//     // routine
-//     const newRoutine = await tx.routine.create({
-//       data: {
-//         semesterId: payload.semesterId,
-//         batchId: payload.batchId,
-//       },
-//     });
-
-//     for (const schedule of payload.schedules) {
-//       // schedule
-//       const newSchedule = await tx.schedule.create({
-//         data: {
-//           day: schedule.day as Day,
-//           break: schedule.break,
-//           routineId: newRoutine.id,
-//         },
-//       });
-
-//       for (const lecture of schedule.lectures) {
-//         // lecture
-//         const newLecture = await tx.lecture.create({
-//           data: {
-//             subjectId: lecture.subject,
-//             room: lecture.room,
-//             startTime: lecture.startTime,
-//             endTime: lecture.endTime,
-//             scheduleId: newSchedule.id,
-//           },
-//         });
-//       }
-//     }
-
-//     return newRoutine;
-//   });
-
-//   return result;
-// }
-
 // update version
 async function create(payload: IRoutineClient): Promise<Routine | null> {
   const result = await prisma.$transaction(async (tx) => {
@@ -172,8 +132,23 @@ async function findByProps(
   return routine;
 }
 
+async function findByBatchIdAndSemId(
+  batchId: string,
+  semId: string
+): Promise<Routine | null> {
+  const routine = await prisma.routine.findFirst({
+    where: {
+      batchId: batchId,
+      semesterId: semId,
+    },
+  });
+
+  return routine;
+}
+
 // export
 export default {
   create,
   findByProps,
+  findByBatchIdAndSemId,
 };

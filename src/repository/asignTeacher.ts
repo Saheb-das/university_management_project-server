@@ -184,10 +184,75 @@ async function remove(
   return result;
 }
 
+export type TeachersWithSub = Prisma.AsignTeacherGetPayload<{
+  include: {
+    teacher: {
+      select: {
+        profile: {
+          select: {
+            avatar: true;
+            user: {
+              select: {
+                email: true;
+                firstName: true;
+                lastName: true;
+              };
+            };
+          };
+        };
+      };
+    };
+    subject: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
+  };
+}>;
+async function findAllTeachersBybatchAndSemId(
+  batchId: string,
+  semId: string
+): Promise<TeachersWithSub[] | null> {
+  const asignedTeachers = await prisma.asignTeacher.findMany({
+    where: {
+      batchId: batchId,
+      semesterId: semId,
+    },
+    include: {
+      teacher: {
+        select: {
+          profile: {
+            select: {
+              avatar: true,
+              user: {
+                select: {
+                  email: true,
+                  firstName: true,
+                  lastName: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      subject: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+    },
+  });
+
+  return asignedTeachers;
+}
+
 // export
 export default {
   create,
   findAllSubjectsByTeacherId,
   findAllByTeacherId,
+  findAllTeachersBybatchAndSemId,
   remove,
 };

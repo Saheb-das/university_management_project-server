@@ -221,9 +221,52 @@ async function createRoutine(
   }
 }
 
-async function getRoutines() {}
+async function getScheduleByBatchId(
+  req: AuthRequest<{}, { batchId: string }, { day: string; semId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { batchId } = req.params;
+  const { day, semId } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
 
-async function getRoutine() {}
+    if (day.toLowerCase() === "sunday") {
+      res.status(200).json({
+        success: true,
+        message: "schedule fetched successfully",
+        schedule: undefined,
+      });
+    }
+
+    if (!batchId) {
+      throw new CustomError("batch name required", 400);
+    }
+
+    if (!day || !semId) {
+      throw new CustomError("day and sem id required", 404);
+    }
+
+    const schedule = await routineService.getScheduleByBatchId(
+      batchId,
+      day,
+      semId
+    );
+    if (!schedule) {
+      throw new CustomError("schedule not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "schedule fetched successfully",
+      schedule: schedule,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
 
 async function getRoutineByBatchName(
   req: AuthRequest<{}, { batch: string }, { sem: string }>,
@@ -260,16 +303,9 @@ async function getRoutineByBatchName(
   }
 }
 
-async function updateRoutine() {}
-
-async function deleteRoutine() {}
-
 // export
 export default {
   createRoutine,
-  getRoutines,
-  getRoutine,
   getRoutineByBatchName,
-  updateRoutine,
-  deleteRoutine,
+  getScheduleByBatchId,
 };

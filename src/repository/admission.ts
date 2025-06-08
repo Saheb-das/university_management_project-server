@@ -69,6 +69,17 @@ async function create(
       },
     });
 
+    // find semester
+    const sem1 = await tx.semester.findFirst({
+      where: {
+        courseId: newStudent.courseId,
+        semNo: 1,
+      },
+    });
+    if (!sem1) {
+      throw Error("semesters not found");
+    }
+
     // create admission
     const newAdmission = await tx.admission.create({
       data: {
@@ -90,6 +101,15 @@ async function create(
             },
           },
         },
+      },
+    });
+
+    // current semester set
+    const curSem = await tx.currentSemester.create({
+      data: {
+        studentId: newStudent.id,
+        batchId: newStudent.batchId,
+        semesterId: sem1.id,
       },
     });
 

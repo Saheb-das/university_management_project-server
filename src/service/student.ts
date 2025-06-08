@@ -1,5 +1,6 @@
 // internal import
 import studentRepository, {
+  StudentWithAcademicDetails,
   StudentWithBatch,
   TStudentUpdateStatus,
 } from "../repository/student";
@@ -124,6 +125,28 @@ async function getStudentByUserId(
   }
 }
 
+async function getStudentUserByUserId(
+  userId: string
+): Promise<StudentWithAcademicDetails | null> {
+  try {
+    if (!userId) {
+      throw new CustomError("user id required", 400);
+    }
+
+    const student = await studentRepository.findByUserIdIncludeAcademicDetails(
+      userId
+    );
+    if (!student) {
+      throw new CustomError("student not found", 404);
+    }
+
+    return student;
+  } catch (error) {
+    console.log("Error fetching student", error);
+    return null;
+  }
+}
+
 async function updateStudentRollAndRegById(
   studentId: string,
   data: IStudentIdentifier
@@ -153,4 +176,5 @@ export default {
   getAllStudentsByBatchId,
   getStudentByUserId,
   updateStudentRollAndRegById,
+  getStudentUserByUserId,
 };

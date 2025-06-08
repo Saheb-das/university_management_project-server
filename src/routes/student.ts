@@ -13,6 +13,8 @@ router.get("/", checkPermission("read_student"), studentController.getStudents);
 
 router.get("/batch", studentController.getStudentsByBatchId);
 
+router.get("/user/:userId", studentController.getStudentUserByUserId);
+
 router.patch(
   "/:id/status",
   checkPermission("update_student"),

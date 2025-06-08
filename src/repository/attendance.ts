@@ -35,7 +35,44 @@ async function createMany(
   return result;
 }
 
+export interface IAttendCountProps {
+  studentId: string;
+  batchId: string;
+  semesterId: string;
+}
+
+export interface IAttendCount {
+  total: number;
+  present: number;
+}
+async function findByStudentIdAndCount(
+  q: IAttendCountProps
+): Promise<IAttendCount | null> {
+  const totalSessions = await prisma.attendance.count({
+    where: {
+      studentId: q.studentId,
+      batchId: q.batchId,
+      semesterId: q.semesterId,
+    },
+  });
+
+  const presentSessions = await prisma.attendance.count({
+    where: {
+      studentId: q.studentId,
+      batchId: q.batchId,
+      semesterId: q.semesterId,
+      status: "present",
+    },
+  });
+
+  return {
+    total: totalSessions,
+    present: presentSessions,
+  };
+}
+
 // export
 export default {
   createMany,
+  findByStudentIdAndCount,
 };

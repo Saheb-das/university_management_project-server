@@ -2,11 +2,14 @@
 import routineRepository, { RoutineWithDetails } from "../repository/routine";
 import batchRepository from "../repository/batch";
 import semesterRepository from "../repository/semester";
+import scheduleRepository, {
+  TScheduleWithLecture,
+} from "../repository/schedule";
+import { CustomError } from "../lib/error";
 
 // types import
 import { Day, Routine } from "@prisma/client";
 import { IRoutineClient } from "../controller/routine";
-import { CustomError } from "../lib/error";
 
 export interface IRoutine {
   semesterId: string;
@@ -79,8 +82,48 @@ async function getRoutineByBatchName(
   }
 }
 
+async function getScheduleByBatchId(
+  batchId: string,
+  day: string,
+  semId: string
+): Promise<TScheduleWithLecture | null> {
+  try {
+    const batch = await batchRepository.findById(batchId);
+    if (!batch) {
+      throw new CustomError("batch not found", 404);
+    }
+
+    const sem = await semesterRepository.findById(semId);
+    if (!sem) {
+      throw new CustomError("semester not found", 404);
+    }
+
+    const routine = await routineRepository.findByBatchIdAndSemId(
+      batch.id,
+      sem.id
+    );
+    if (!routine) {
+      throw new CustomError("routine not found", 404);
+    }
+
+    const schedule = await scheduleRepository.findByRoutineIdAndDayIncLectures(
+      routine.id,
+      day
+    );
+    if (!schedule) {
+      throw new CustomError("schedule not found", 404);
+    }
+
+    return schedule;
+  } catch (error) {
+    console.log("Error fetched routine", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createRoutine,
   getRoutineByBatchName,
+  getScheduleByBatchId,
 };
