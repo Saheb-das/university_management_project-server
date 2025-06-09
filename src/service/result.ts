@@ -3,7 +3,7 @@ import studentRepository from "../repository/student";
 import examRepository from "../repository/exam";
 import semesterRepository from "../repository/semester";
 import subjectRepository from "../repository/subject";
-import resultRepository from "../repository/result";
+import resultRepository, { TResultWithDetails } from "../repository/result";
 import { CustomError } from "../lib/error";
 
 // types import
@@ -121,9 +121,42 @@ async function getResultByStudentExamSem(
   }
 }
 
+export interface QueryProps {
+  studentId: string;
+  batchId: string;
+  semId: string;
+}
+async function getResultBySemBatchStudentIds({
+  studentId,
+  batchId,
+  semId,
+}: QueryProps): Promise<TResultWithDetails[] | []> {
+  try {
+    const student = await studentRepository.findById(studentId);
+    if (!student) {
+      throw new CustomError("student not found", 404);
+    }
+
+    const results = await resultRepository.findBySemBatchStudentIds({
+      studentId,
+      batchId,
+      semId,
+    });
+    if (!results || results.length === 0) {
+      throw new CustomError("results not found", 404);
+    }
+
+    return results;
+  } catch (error) {
+    console.log("Error fetching result", error);
+    return [];
+  }
+}
+
 // export
 export default {
   createResult,
   getResultByStudentId,
   getResultByStudentExamSem,
+  getResultBySemBatchStudentIds,
 };

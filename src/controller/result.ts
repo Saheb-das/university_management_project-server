@@ -128,6 +128,49 @@ async function getResultByStudentExamSem(
   }
 }
 
+async function getResultBySemBatchStudentIds(
+  req: AuthRequest<
+    {},
+    { semId: string },
+    { studentId: string; batchId: string }
+  >,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { semId } = req.params;
+  const { studentId, batchId } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthrized user", 401);
+    }
+
+    if (!studentId || !batchId) {
+      throw new CustomError("student id and examId required", 400);
+    }
+
+    if (!semId) {
+      throw new CustomError("sem no required", 400);
+    }
+
+    const result = await resultService.getResultBySemBatchStudentIds({
+      studentId,
+      batchId,
+      semId,
+    });
+    if (!result) {
+      throw new CustomError("result not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "result fetched successfully",
+      results: result,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function updateResult() {}
 
 // export
@@ -136,4 +179,5 @@ export default {
   getResultByStudentIdAndSem,
   updateResult,
   getResultByStudentExamSem,
+  getResultBySemBatchStudentIds,
 };

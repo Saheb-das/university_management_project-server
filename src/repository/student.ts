@@ -130,11 +130,11 @@ async function findByUserId(userId: string): Promise<StudentWithBatch | null> {
 
 export type StudentWithAcademicDetails = Prisma.StudentGetPayload<{
   include: {
-    profile:{
-     select:{
-      user: true
-     }
-    },
+    profile: {
+      select: {
+        user: true;
+      };
+    };
     department: {
       select: {
         type: true;
@@ -148,6 +148,12 @@ export type StudentWithAcademicDetails = Prisma.StudentGetPayload<{
     course: {
       select: {
         name: true;
+        degree: {
+          select: {
+            id: true;
+            type: true;
+          };
+        };
       };
     };
     currentSemester: {
@@ -172,9 +178,9 @@ async function findByUserIdIncludeAcademicDetails(
     },
     include: {
       profile: {
-        select:{
-          user:true
-        }
+        select: {
+          user: true,
+        },
       },
       department: {
         select: {
@@ -189,6 +195,12 @@ async function findByUserIdIncludeAcademicDetails(
       course: {
         select: {
           name: true,
+          degree: {
+            select: {
+              id: true,
+              type: true,
+            },
+          },
         },
       },
       currentSemester: {

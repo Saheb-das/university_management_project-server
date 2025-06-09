@@ -15,6 +15,8 @@ router.get(
   resultController.getResultByStudentExamSem
 );
 
+router.get("/sems/:semId", resultController.getResultBySemBatchStudentIds);
+
 router.get("/students/:studentId", resultController.getResultByStudentIdAndSem);
 
 router.patch("/:id", resultController.updateResult);

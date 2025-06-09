@@ -1,6 +1,7 @@
-import { Result } from "@prisma/client";
+import { Prisma, Result } from "@prisma/client";
 import prisma from "../lib/prisma";
 import exam from "./exam";
+import { QueryProps } from "../service/result";
 
 type TSubject = {
   id: string;
@@ -104,9 +105,68 @@ async function findByStudentExamSemIds(
   return results;
 }
 
+export type TResultWithDetails = Prisma.ResultGetPayload<{
+  include: {
+    semester: {
+      select: {
+        id: true;
+        semNo: true;
+      };
+    };
+    subject: {
+      select: {
+        id: true;
+        name: true;
+      };
+    };
+    exam: {
+      select: {
+        id: true;
+        type: true;
+      };
+    };
+  };
+}>;
+async function findBySemBatchStudentIds({
+  studentId,
+  batchId,
+  semId,
+}: QueryProps): Promise<TResultWithDetails[] | []> {
+  const results = await prisma.result.findMany({
+    where: {
+      studentId: studentId,
+      batchId: batchId,
+      semesterId: semId,
+    },
+    include: {
+      semester: {
+        select: {
+          id: true,
+          semNo: true,
+        },
+      },
+      subject: {
+        select: {
+          id: true,
+          name: true,
+        },
+      },
+      exam: {
+        select: {
+          id: true,
+          type: true,
+        },
+      },
+    },
+  });
+
+  return results;
+}
+
 // export
 export default {
   create,
   findAllByStudentIdAndSemNo,
   findByStudentExamSemIds,
+  findBySemBatchStudentIds,
 };
