@@ -94,10 +94,71 @@ async function findAllByBatchId(
   return notes;
 }
 
+export type TNoteWithTeacherAndSub = Prisma.NoteGetPayload<{
+  include: {
+    teacher: {
+      select: {
+        profile: {
+          select: {
+            user: {
+              select: {
+                firstName: true;
+                lastName: true;
+                id: true;
+              };
+            };
+          };
+        };
+      };
+    };
+    subject: {
+      select: {
+        name: true;
+      };
+    };
+  };
+}>;
+async function findAllByBatchAndSemIds(
+  batchId: string,
+  semId: string
+): Promise<TNoteWithTeacherAndSub[] | []> {
+  const notes = await prisma.note.findMany({
+    where: {
+      batchId: batchId,
+      semesterId: semId,
+    },
+    include: {
+      teacher: {
+        select: {
+          profile: {
+            select: {
+              user: {
+                select: {
+                  firstName: true,
+                  lastName: true,
+                  id: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      subject: {
+        select: {
+          name: true,
+        },
+      },
+    },
+  });
+
+  return notes;
+}
+
 // export
 export default {
   create,
   findAllByTeacherId,
   findById,
   findAllByBatchId,
+  findAllByBatchAndSemIds,
 };

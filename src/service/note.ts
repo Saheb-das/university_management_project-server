@@ -1,8 +1,12 @@
 // internal import
 import stuffRepository from "../repository/stuff";
 import batchRepository from "../repository/batch";
-import noteRepository, { TNoteWithSub } from "../repository/note";
+import noteRepository, {
+  TNoteWithSub,
+  TNoteWithTeacherAndSub,
+} from "../repository/note";
 import subjectRepository from "../repository/subject";
+import semesterRepository from "../repository/semester";
 import { CustomError } from "../lib/error";
 
 // types import
@@ -131,10 +135,38 @@ async function getNotesByBatchId(
   }
 }
 
+async function getAllNotesByBatchAndSem(
+  batchId: string,
+  semId: string
+): Promise<TNoteWithTeacherAndSub[] | []> {
+  try {
+    const batch = await batchRepository.findById(batchId);
+    if (!batch) {
+      throw new CustomError("batch not found", 404);
+    }
+
+    const sem = await semesterRepository.findById(semId);
+    if (!sem) {
+      throw new CustomError("semester not found", 404);
+    }
+
+    const notes = await noteRepository.findAllByBatchAndSemIds(batchId, semId);
+    if (!notes) {
+      throw new CustomError("notes not found", 404);
+    }
+
+    return notes;
+  } catch (error) {
+    console.log("Error fetching notes", error);
+    return [];
+  }
+}
+
 // export
 export default {
   createNote,
   getNotesByTeacherId,
   getNoteDoc,
   getNotesByBatchId,
+  getAllNotesByBatchAndSem,
 };

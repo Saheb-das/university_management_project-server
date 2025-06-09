@@ -152,10 +152,46 @@ async function getNotesByBatchId(
   }
 }
 
+async function getNotesByBatchAndSem(
+  req: AuthRequest<{}, { batchId: string }, { semId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { batchId } = req.params;
+  const { semId } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!batchId) {
+      throw new CustomError("batch id required", 400);
+    }
+
+    if (!semId) {
+      throw new CustomError("semester id required", 400);
+    }
+
+    const notes = await noteService.getAllNotesByBatchAndSem(batchId, semId);
+    if (!notes) {
+      throw new CustomError("notes not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "notes fetched successfully",
+      notes: notes,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // export
 export default {
   createMaterial,
   getNotesByTeacherId,
   getNoteDoc,
   getNotesByBatchId,
+  getNotesByBatchAndSem,
 };
