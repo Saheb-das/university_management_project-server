@@ -6,6 +6,8 @@ import collageRepository from "../repository/collage";
 type TFormProps = {
   collageId: string;
   formId: string;
+  role: string;
+  batchId?: string;
   formSchema: string;
   ttlInSec?: string;
 };
@@ -16,7 +18,14 @@ async function createNewForm(formProps: TFormProps): Promise<string | null> {
       throw new CustomError("collage not found", 404);
     }
 
-    const cacheKey = `${collage.id}_${formProps.formId}`;
+    let identity: string;
+    if (formProps.role === "student" && formProps.batchId) {
+      identity = `${formProps.role}:${formProps.batchId}`;
+    } else {
+      identity = `${formProps.role}`;
+    }
+
+    const cacheKey = `${collage.id}_${identity}_${formProps.formId}`;
     const cacheValue = formProps.formSchema;
 
     let isCached: any;
@@ -34,6 +43,72 @@ async function createNewForm(formProps: TFormProps): Promise<string | null> {
     console.log("Error caching form", error);
     return null;
   }
+}
+
+interface StudentSubmitProps {
+  collageId: string;
+  name: string;
+  batch: string;
+  rollNo?: string;
+  userRole: string;
+  batchId: string;
+  formName: string;
+  data: { [key: string]: any };
+}
+interface ISetFormValue {
+  [key: string]: string | { [key: string]: any };
+  data: { [key: string]: any };
+}
+async function submitStudentForm(
+  payload: StudentSubmitProps
+): Promise<boolean> {
+  const submitCacheKey = `submit_${payload.collageId}_${payload.userRole}:${payload.batchId}_${payload.formName}`;
+
+  const existing = cache.get<ISetFormValue[]>(submitCacheKey);
+
+  const dataPayload = {
+    name: payload.name,
+    batch: payload.batch,
+    rollNo: payload.rollNo || "",
+    data: payload.data,
+  };
+
+  if (existing) {
+    existing.push(dataPayload);
+    cache.set(submitCacheKey, existing);
+  } else {
+    cache.set(submitCacheKey, [dataPayload]);
+  }
+
+  return true;
+}
+
+interface OtherSubmitProps {
+  collageId: string;
+  name: string;
+  userRole: string;
+  formName: string;
+  data: { [key: string]: any };
+}
+async function submitOtherForm(payload: OtherSubmitProps): Promise<boolean> {
+  const submitCacheKey = `submit_${payload.collageId}_${payload.userRole}_${payload.formName}`;
+
+  const existing = cache.get<ISetFormValue[]>(submitCacheKey);
+
+  const dataPayload = {
+    name: payload.name,
+    role: payload.userRole,
+    data: payload.data,
+  };
+
+  if (existing) {
+    existing.push(dataPayload);
+    cache.set(submitCacheKey, existing);
+  } else {
+    cache.set(submitCacheKey, [dataPayload]);
+  }
+
+  return true;
 }
 
 type TForm = {
@@ -73,31 +148,89 @@ async function getAllForms(collageId: string): Promise<TForm[] | null> {
   }
 }
 
-async function getFormValueInJson(
+async function getSubmittedFormData(
+  formKey: string
+): Promise<ISetFormValue[] | []> {
+  try {
+    const key = `submit_${formKey}`;
+
+    const value = cache.get<ISetFormValue[]>(key);
+    if (!value) {
+      throw new CustomError("form data not found", 404);
+    }
+
+    return value;
+  } catch (error) {
+    console.log("Error fetching form data", error);
+    return [];
+  }
+}
+
+async function getAllFormTitles(
   collageId: string,
-  formId: string
-): Promise<string | null> {
+  role: string
+): Promise<string[] | []> {
+  try {
+    const collage = await collageRepository.findById(collageId);
+    if (!collage) {
+      throw new CustomError("collage not found");
+    }
+
+    const allKeys = cache.keys();
+
+    let preStrKey = "";
+    if (role === "examceller") {
+      preStrKey = `${collage.id}_`;
+    } else {
+      preStrKey = `${collage.id}_${role}`;
+    }
+
+    const titles = allKeys.filter((key) => key.startsWith(preStrKey));
+
+    return titles;
+  } catch (error) {
+    console.log("Error fetching all form-titles", error);
+    return [];
+  }
+}
+
+interface IIdentityForms {
+  formId: string;
+  formValue: string;
+}
+async function getFormsByIdentity(
+  collageId: string,
+  identity: string
+): Promise<IIdentityForms[] | []> {
   try {
     const collage = await collageRepository.findById(collageId);
     if (!collage) {
       throw new CustomError("collage not found", 404);
     }
-    const cacheKey = `${collage.id}_${formId}`;
 
-    const isGet = cache.has(cacheKey);
-    if (!isGet) {
-      throw new CustomError("Form is missing or expired", 400);
-    }
+    const allKeys = cache.keys();
 
-    const formValue = cache.get<string>(cacheKey);
-    if (!formValue) {
-      throw new CustomError("cache value not found", 404);
-    }
+    const allForms = allKeys
+      .filter((key) => key.startsWith(`${collage.id}_${identity}_`))
+      .map((key) => {
+        const formId = key.split("_")[2];
+        const formValue = cache.get(key);
 
-    return formValue;
+        // Only include if not expired and value exists
+        if (formValue !== undefined) {
+          return { formId, formValue };
+        }
+        return null;
+      })
+      .filter(
+        (entry): entry is { formId: string; formValue: string } =>
+          entry !== null
+      );
+
+    return allForms;
   } catch (error) {
     console.log("Error caching form", error);
-    return null;
+    return [];
   }
 }
 
@@ -134,6 +267,10 @@ async function deleteForm(
 export default {
   createNewForm,
   getAllForms,
-  getFormValueInJson,
+  getAllFormTitles,
+  getFormsByIdentity,
+  getSubmittedFormData,
+  submitStudentForm,
+  submitOtherForm,
   deleteForm,
 };

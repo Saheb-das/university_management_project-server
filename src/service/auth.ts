@@ -121,6 +121,7 @@ interface ILogin {
   user: {
     id: string;
     role: UserRole;
+    name: string;
     email: string;
     collageId: string;
   };
@@ -159,6 +160,7 @@ async function login(data: TLoginClient): Promise<ILogin | null> {
       accessToken,
       user: {
         id: user.id,
+        name: `${user.firstName} ${user.lastName}`,
         role: user.role,
         email: user.email,
         collageId: user.collageId,

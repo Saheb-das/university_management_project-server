@@ -8,11 +8,19 @@ import formController from "../controller/form";
 const router = express.Router();
 
 // routes
-router.post("/save", formController.createForm);
+router.post("/", formController.createForm);
+
+router.post("/submit/student", formController.submitStudentForm);
+
+router.post("/submit/other", formController.submitOtherForm);
+
+router.get("/submit/data", formController.getSubmittedFormData);
 
 router.get("/", formController.getForms);
 
-router.get("/:formId", formController.getForm);
+router.get("/form-titles", formController.getFormTitles);
+
+router.get("/identity", formController.getFormByIdentity);
 
 router.delete("/:formId", formController.deleteForm);
 
