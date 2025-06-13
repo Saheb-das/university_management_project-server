@@ -100,7 +100,36 @@ async function getSubjectsByCourseId(
   }
 }
 
-async function getCourse() {}
+async function getCourse(
+  req: AuthRequest<{}, { id: string }>,
+  res: Response,
+  next: NextFunction
+) {
+  const { id } = req.params;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!id) {
+      throw new CustomError("course id required", 400);
+    }
+
+    const course = await courseService.getCourseById(id);
+    if (!course) {
+      throw new CustomError("course not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "course fetched successfully",
+      course: course,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function updateCourse() {}
 async function deleteCourse() {}
 

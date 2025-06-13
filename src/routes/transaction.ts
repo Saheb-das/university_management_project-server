@@ -25,9 +25,5 @@ router.get(
   transactionController.getTransaction
 );
 
-router.post("/create-order", transactionController.createPaymentOrder);
-
-router.post("/verify-payment", transactionController.verifyPaymentOrder);
-
 // export
 export default router;

@@ -22,6 +22,7 @@ import noteRoutes from "./note";
 import examRoutes from "./exam";
 import formRoutes from "./form";
 import statsRoutes from "./statistic";
+import razorpayRoutes from "./razorpay";
 import { authenticateHTTP } from "../middleware/authenticate";
 
 // create router
@@ -48,6 +49,7 @@ router.use("/projects", authenticateHTTP, projectRoutes);
 router.use("/events", authenticateHTTP, eventRoutes);
 router.use("/results", authenticateHTTP, resultRoutes);
 router.use("/uploads", authenticateHTTP, uploadRoutes);
+router.use("/razorpays", authenticateHTTP, razorpayRoutes);
 
 // export
 export default router;

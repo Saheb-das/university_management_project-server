@@ -29,3 +29,9 @@ export interface ITransaction {
   utr: string;
   currency: string;
 }
+
+export interface IVerifyOrder {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+}

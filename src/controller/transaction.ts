@@ -1,47 +1,49 @@
 // internal import
 import transactionService from "../service/transaction";
-import { RoleEnum } from "../zod/auth";
+
 import { CustomError } from "../lib/error";
-import {
-  transactionSchema,
-  transWithVerifySchema,
-  verifyOrderSchema,
-} from "../zod/transaction";
+import { transactionSchema } from "../zod/transaction";
 
 // types import
 import { Response, NextFunction } from "express";
 import { AuthRequest } from "../types";
-import { TTransactionClient, TVerifyClient } from "../zod/transaction";
+import { TTransactionClient } from "../zod/transaction";
+
+interface ICreateTransBody {
+  transData: TTransactionClient;
+  isSalary: boolean;
+  userId: string;
+}
 
 async function createTransaction(
-  req: AuthRequest<TTransactionClient, {}, { stuff: string; student: string }>,
+  req: AuthRequest<ICreateTransBody>,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const transactionInfo = req.body;
-  const { student, stuff } = req.query;
+  const { transData, isSalary, userId } = req.body;
+
   try {
     if (!req.authUser) {
       throw new CustomError("unathorized user", 401);
     }
 
-    if (!student && !stuff) {
-      throw new CustomError("user id required in query params", 400);
+    if (!userId) {
+      throw new CustomError("user id required", 400);
     }
 
     const collageId = req.authUser.collageId;
 
-    const isValid = transactionSchema.safeParse(transactionInfo);
+    const isValid = transactionSchema.safeParse(transData);
     if (!isValid.success) {
-      throw new CustomError(isValid.error.message, 400);
+      throw new CustomError(isValid.error.message, 400, isValid.error);
     }
 
-    const newTransaction = await transactionService.createTransaction(
-      isValid.data,
+    const newTransaction = await transactionService.createTransaction({
+      transInfo: isValid.data,
       collageId,
-      stuff,
-      student
-    );
+      isSalary,
+      userId,
+    });
     if (!newTransaction) {
       throw new CustomError("transaction not create", 500);
     }
@@ -113,98 +115,6 @@ async function getTransaction(
   }
 }
 
-async function createPaymentOrder(
-  req: AuthRequest<{ amount: string }>,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  const { amount } = req.body;
-  try {
-    if (!req.authUser) {
-      throw new CustomError("unauthorized user", 401);
-    }
-
-    const userInfo = {
-      collage: req.authUser.collageId,
-      userId: req.authUser.id,
-      userRole: req.authUser.role,
-    };
-
-    if (!amount) {
-      throw new CustomError("payment amount required", 400);
-    }
-
-    const newOrder = await transactionService.createPaymentOrder(
-      amount,
-      userInfo
-    );
-    if (!newOrder) {
-      throw new CustomError("order not created", 500);
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "payment order created successfully",
-      order: newOrder,
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-
-async function verifyPaymentOrder(
-  req: AuthRequest<TVerifyClient, {}, { student: string; stuff: string }>,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  const { transaction, verifyInfo } = req.body;
-  const { student, stuff } = req.query;
-  try {
-    if (!req.authUser) {
-      throw new CustomError("unauthorized user", 401);
-    }
-
-    if (!student && !stuff) {
-      throw new CustomError("user id required in query params", 400);
-    }
-
-    const collageId = req.authUser.collageId;
-
-    const isValidTrans = transWithVerifySchema.safeParse(transaction);
-    if (!isValidTrans.success) {
-      throw new CustomError(
-        "invalid transaction input",
-        400,
-        isValidTrans.error
-      );
-    }
-
-    const isValidVerify = verifyOrderSchema.safeParse(verifyInfo);
-    if (!isValidVerify.success) {
-      throw new CustomError("invalid verify input", 400, isValidVerify.error);
-    }
-
-    const newTransaction = await transactionService.verifyPaymentOrderAndCreate(
-      isValidVerify.data,
-      isValidTrans.data,
-      collageId,
-      stuff,
-      student
-    );
-    if (!newTransaction) {
-      throw new CustomError("transaction not created", 500);
-    }
-
-    res.status(200).json({
-      success: true,
-      message: "payment order created successfully",
-      transaction: newTransaction,
-    });
-  } catch (error) {
-    next(error);
-  }
-}
-
 async function getMyTransactions(
   req: AuthRequest,
   res: Response,
@@ -238,7 +148,5 @@ export default {
   createTransaction,
   getTransactions,
   getTransaction,
-  createPaymentOrder,
-  verifyPaymentOrder,
   getMyTransactions,
 };

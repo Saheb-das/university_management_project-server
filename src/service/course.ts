@@ -88,9 +88,24 @@ async function getAllSubjectsByCourseId(courseId: string) {
   }
 }
 
+async function getCourseById(courseId: string): Promise<Course | null> {
+  try {
+    const course = await courseRepository.findByIdWithFilter(courseId);
+    if (!course) {
+      throw new CustomError("course not found", 404);
+    }
+
+    return course;
+  } catch (error) {
+    console.log("Error finding course", error);
+    return null;
+  }
+}
+
 // export
 export default {
   createCourse,
   getAllCourses,
   getAllSubjectsByCourseId,
+  getCourseById,
 };
