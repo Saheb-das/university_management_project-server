@@ -20,9 +20,19 @@ router.get(
 router.get("/me", transactionController.getMyTransactions);
 
 router.get(
+  "/students/:studentId",
+  transactionController.getFeeTransactionByStudentId
+);
+
+router.get(
   "/:id",
   // checkPermission("read_transaction"),
   transactionController.getTransaction
+);
+
+router.patch(
+  "/fees/:feeId/verify-fee",
+  transactionController.verifyTutionFeeById
 );
 
 // export

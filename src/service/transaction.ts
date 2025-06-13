@@ -2,11 +2,12 @@
 import transactionRepository from "../repository/transaction";
 import stuffRepository from "../repository/stuff";
 import studentRepository from "../repository/student";
+import tutionFeeRepository, { TFeesTransaction } from "../repository/tutionFee";
 import { CustomError } from "../lib/error";
 import { monthArr } from "../config/constant";
 
 // types import
-import { Transaction, UserRole } from "@prisma/client";
+import { Transaction, TutionFee, UserRole } from "@prisma/client";
 import { TTransactionClient } from "../zod/transaction";
 import { ITransaction } from "../types/transaction";
 import { IVerifyOrder } from "./razorpay";
@@ -153,6 +154,37 @@ async function getTransaction(
   }
 }
 
+async function getFeeTransactionByStudentId(
+  studentId: string,
+  semNo: string,
+  batchId: string
+): Promise<TFeesTransaction> {
+  try {
+    const student = await studentRepository.findById(studentId);
+    if (!student) {
+      throw new CustomError("student not found", 404);
+    }
+
+    if (student.batchId !== batchId) {
+      throw new CustomError("invalid batch", 400);
+    }
+
+    const tran = await tutionFeeRepository.findByStudentBatchIdsAndSemNo(
+      studentId,
+      Number(semNo),
+      batchId
+    );
+    if (!tran) {
+      throw new CustomError("transaction not found", 404);
+    }
+
+    return tran;
+  } catch (error) {
+    console.log("Error fetching transaction", error);
+    throw error;
+  }
+}
+
 async function getAllTransactionsByRoleAndUserId(
   role: UserRole,
   userId: string
@@ -186,11 +218,29 @@ async function getAllTransactionsByRoleAndUserId(
   }
 }
 
+async function verifyTutionFeeById(
+  feeId: string,
+  tranId: string
+): Promise<TutionFee> {
+  try {
+    const isVerify = await tutionFeeRepository.verifyFee(feeId, tranId);
+    if (!isVerify) {
+      throw new CustomError("transaction not found", 404);
+    }
+
+    return isVerify;
+  } catch (error) {
+    console.log("Error fetching transaction", error);
+    throw error;
+  }
+}
+
 // export
 export default {
   createTransaction,
   getAllTransactions,
   getTransaction,
-
+  getFeeTransactionByStudentId,
   getAllTransactionsByRoleAndUserId,
+  verifyTutionFeeById,
 };

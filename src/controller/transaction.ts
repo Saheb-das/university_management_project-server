@@ -143,10 +143,89 @@ async function getMyTransactions(
   }
 }
 
+async function getFeeTransactionByStudentId(
+  req: AuthRequest<{}, { studentId: string }, { semNo: string; batch: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { studentId } = req.params;
+  const { semNo, batch } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!studentId) {
+      throw new CustomError("student id required", 404);
+    }
+
+    if (!semNo || !batch) {
+      throw new CustomError("sem no and batch id requried", 400);
+    }
+
+    const tran = await transactionService.getFeeTransactionByStudentId(
+      studentId,
+      semNo,
+      batch
+    );
+    if (!tran) {
+      throw new CustomError("transactions not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "transactions fetched successfully",
+      transaction: tran,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function verifyTutionFeeById(
+  req: AuthRequest<{ tranId: string }, { feeId: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { feeId } = req.params;
+  const { tranId } = req.body;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!feeId) {
+      throw new CustomError("tution fee id required", 404);
+    }
+
+    if (!tranId) {
+      throw new CustomError("transaction id required", 404);
+    }
+
+    const verified = await transactionService.verifyTutionFeeById(
+      feeId,
+      tranId
+    );
+    if (!verified) {
+      throw new CustomError("transactions not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "transactions verified successfully",
+      verified: verified,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // export
 export default {
   createTransaction,
   getTransactions,
   getTransaction,
   getMyTransactions,
+  getFeeTransactionByStudentId,
+  verifyTutionFeeById,
 };
