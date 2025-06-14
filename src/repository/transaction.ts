@@ -99,15 +99,38 @@ async function create({
   return result;
 }
 
-async function findAll(
-  salaryType: boolean = false,
-  tutionFeeType: boolean = false
-): Promise<Transaction[] | null> {
+async function findAllByQuery(
+  date?: string,
+  type?: "salary" | "tutionFee"
+): Promise<Transaction[] | []> {
+  const now = new Date();
+
+  const whereClause: Record<string, any> = {};
+
+  // Filter by date if provided
+  if (date) {
+    const fromDate = new Date(date);
+    if (isNaN(fromDate.getTime())) {
+      throw new Error("Invalid date format");
+    }
+
+    whereClause.createdAt = {
+      gte: fromDate,
+      lte: now,
+    };
+  }
+
+  // Filter by transaction type (based on related model field)
+  if (type) {
+    whereClause.type = type;
+  }
+
   const transactions = await prisma.transaction.findMany({
-    include: {
-      salary: salaryType,
-      tutionFee: tutionFeeType,
+    where: whereClause,
+    orderBy: {
+      createdAt: "desc",
     },
+    take: !date && !type ? 100 : undefined,
   });
 
   return transactions;
@@ -196,8 +219,8 @@ async function findAllByRoleAndRoleId(
 // export
 export default {
   create,
-  findAll,
   findById,
   findByType,
+  findAllByQuery,
   findAllByRoleAndRoleId,
 };

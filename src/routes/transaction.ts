@@ -13,7 +13,7 @@ router.post("/", transactionController.createTransaction);
 
 router.get(
   "/",
-  checkPermission("read_transaction"),
+  // checkPermission("read_transaction"),
   transactionController.getTransactions
 );
 

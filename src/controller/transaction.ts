@@ -1,6 +1,5 @@
 // internal import
-import transactionService from "../service/transaction";
-
+import transactionService, { TType } from "../service/transaction";
 import { CustomError } from "../lib/error";
 import { transactionSchema } from "../zod/transaction";
 
@@ -59,17 +58,20 @@ async function createTransaction(
 }
 
 async function getTransactions(
-  req: AuthRequest<{}, {}, { payType: string }>,
+  req: AuthRequest<{}, {}, { fromDate?: string; type?: string }>,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const { payType } = req.query;
+  const { fromDate, type } = req.query;
   try {
     if (!req.authUser) {
       throw new CustomError("unauthorized user", 401);
     }
 
-    const transactions = await transactionService.getAllTransactions(payType);
+    const transactions = await transactionService.getAllTransactions(
+      fromDate,
+      type as TType
+    );
     if (!transactions) {
       throw new CustomError("transactions not found", 404);
     }

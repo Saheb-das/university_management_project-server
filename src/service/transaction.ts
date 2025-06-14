@@ -114,22 +114,24 @@ async function createTransaction({
   }
 }
 
+export type TType = "salary" | "tutionFee";
 async function getAllTransactions(
-  payType: string
-): Promise<Transaction[] | null> {
+  fromDate?: string,
+  type?: TType
+): Promise<Transaction[]> {
   try {
-    const salaryType = payType === "salary";
-    const tutionFeeType = payType === "tutionFee";
-
-    const transactions = await transactionRepository.findAll(
-      salaryType,
-      tutionFeeType
+    const transactions = await transactionRepository.findAllByQuery(
+      fromDate,
+      type
     );
+    if (!transactions) {
+      throw new CustomError("transactions not found", 404);
+    }
 
     return transactions;
   } catch (error) {
     console.log("Error fetching transactions", error);
-    return null;
+    throw error;
   }
 }
 
