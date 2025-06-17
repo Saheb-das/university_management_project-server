@@ -1,11 +1,11 @@
 // internal import
-import { authenticateSocket } from "../middleware/authenticate";
 import studentService from "../service/student";
 import asignTeacherService from "../service/asign-teacher";
-import { authorizeSocket } from "../middleware/permission";
-import { CustomError } from "../lib/error";
 import messageService from "../service/message";
 import conversationService from "../service/conversation";
+import { authenticateSocket } from "../middleware/authenticate";
+import { authorizeSocket } from "../middleware/permission";
+import { CustomError, handleSocketError } from "../lib/error";
 
 // types import
 import { Namespace } from "socket.io";
@@ -32,7 +32,7 @@ export function classroomNamespace(classroomChat: Namespace) {
         }
 
         // ✅ Join batch rooms for student
-        const batchRoom = `collage_${user.collageId}_${user.role}_${student.batch.name}`;
+        const batchRoom = `collage_${user.collageId}_${student.batch.name}`;
         socket.join(batchRoom);
         console.log(`${user.email} joined college room: ${batchRoom}`);
 
@@ -43,7 +43,7 @@ export function classroomNamespace(classroomChat: Namespace) {
             const conversation =
               await conversationService.getConByNameAndCollageId({
                 collageId: user.collageId,
-                conName: `classgroup ${student.batch.name}`,
+                conName: `classroom ${student.batch.name}`,
               });
 
             if (!conversation) {
@@ -65,9 +65,8 @@ export function classroomNamespace(classroomChat: Namespace) {
 
             // Emit only to same-college users
             classroomChat.to(batchRoom).emit("new_classroom", updateMsg);
-          } catch (err: any) {
-            console.error("Socket error:", err.message);
-            socket.emit("error_occurred", { message: err.message });
+          } catch (error: unknown) {
+            handleSocketError(socket, error, "classroom_error");
           }
         });
       } else if (user.role === "teacher") {
@@ -82,8 +81,8 @@ export function classroomNamespace(classroomChat: Namespace) {
         }
 
         // ✅ Join all batch rooms for teacher
-        teacherBatches.forEach((batch) => {
-          const batchRoom = `college_${user.collageId}_${user.role}_${batch}`;
+        teacherBatches.forEach((item) => {
+          const batchRoom = `college_${user.collageId}_${item.batch.name}`;
           socket.join(batchRoom);
           console.log(`${user.email} joined room: ${batchRoom}`);
         });
@@ -100,12 +99,12 @@ export function classroomNamespace(classroomChat: Namespace) {
 
             // Extract batch name from conversation name
             const batchName = conversation.name
-              .replace("classgroup ", "")
+              .replace("classroom ", "")
               .trim();
 
             // Ensure teacher is assigned to that batch
             const isAssigned = teacherBatches.some(
-              (batch) => batch === batchName
+              (item) => item.batch.name === batchName
             );
             if (!isAssigned) {
               throw new CustomError("You are not assigned to this batch", 403);
@@ -121,20 +120,16 @@ export function classroomNamespace(classroomChat: Namespace) {
             const updateMsg = await messageService.createMessage(msgPayload);
 
             // Emit message to the specific batch room
-            const batchRoom = `college_${user.collageId}_${user.role}_${batchName}`;
+            const batchRoom = `college_${user.collageId}_${batchName}`;
 
             classroomChat.to(batchRoom).emit("new_classroom", updateMsg);
-          } catch (err: any) {
-            console.error("Socket error:", err.message);
-            socket.emit("error_occurred", { message: err.message });
+          } catch (error: unknown) {
+            handleSocketError(socket, error, "classroom_error");
           }
         });
       }
-    } catch (error: any) {
-      socket.emit("error", {
-        status: error.statusCode || 500,
-        message: error.message || "Unexpected error",
-      });
+    } catch (error: unknown) {
+      handleSocketError(socket, error, "classroom_error");
     }
   });
 }

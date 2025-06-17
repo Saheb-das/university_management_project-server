@@ -8,7 +8,7 @@ import { IConversation } from "../repository/conversation";
 
 async function getConByNameAndCollageId(
   conInfo: IConversation
-): Promise<Conversation | null> {
+): Promise<Conversation> {
   try {
     const conPayload: IConversation = {
       collageId: conInfo.collageId,
@@ -22,7 +22,7 @@ async function getConByNameAndCollageId(
     return con;
   } catch (error) {
     console.log("Error fetching conversation", error);
-    return null;
+    throw error;
   }
 }
 

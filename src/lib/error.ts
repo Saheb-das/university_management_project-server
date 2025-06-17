@@ -1,5 +1,6 @@
 // external import
 import { Request, Response, NextFunction } from "express";
+import { Socket } from "socket.io";
 import { ZodError, ZodIssue } from "zod";
 
 export class CustomError extends Error {
@@ -55,9 +56,6 @@ function noMatchRoute(_req: Request, _res: Response, next: NextFunction) {
   next(new CustomError("Invalid path url", 404));
 }
 
-// export
-export { globalErrorHandler, noMatchRoute };
-
 function formatZodErrors(
   err: ZodError
 ): { message: string; path: string; code: string }[] {
@@ -67,3 +65,32 @@ function formatZodErrors(
     code: error.code, // The error code, like 'invalid_type', 'too_small', etc.
   }));
 }
+
+export function handleSocketError(
+  socket: Socket,
+  error: unknown,
+  event: string = "error_occurred"
+) {
+  if (error instanceof CustomError) {
+    console.error("CustomError:", error.message);
+    socket.emit(event, {
+      message: error.message,
+      status: error.statusCode,
+    });
+  } else if (error instanceof Error) {
+    console.error("Error:", error.message);
+    socket.emit(event, {
+      message: error.message,
+      status: 500,
+    });
+  } else {
+    console.error("Unknown error:", error);
+    socket.emit(event, {
+      message: "An unexpected error occurred.",
+      status: 500,
+    });
+  }
+}
+
+// export
+export { globalErrorHandler, noMatchRoute };

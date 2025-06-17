@@ -1,14 +1,13 @@
 // internal import
 import { authenticateSocket } from "../middleware/authenticate";
 import messageService from "../service/message";
-import { authorizeSocket } from "../middleware/permission";
 import conversationService from "../service/conversation";
 
 // types import
 import { Namespace } from "socket.io";
 import { IMessage } from "../repository/message";
 import { IMsg } from "../types/conversation";
-import { CustomError } from "../lib/error";
+import { CustomError, handleSocketError } from "../lib/error";
 
 export function announcementNamespace(announcementChat: Namespace) {
   announcementChat.use(authenticateSocket);
@@ -16,20 +15,22 @@ export function announcementNamespace(announcementChat: Namespace) {
   announcementChat.on("connection", (socket) => {
     const user = socket.data.authUser;
 
-    // ✅ Authorization logic
-    if (!authorizeSocket(["admin", "superadmin"])(socket)) {
-      socket.disconnect(true);
-      return;
-    }
-
-    // Step 3: Join collegeId room
+    // ✅ Join their college's announcement room
     const collegeRoom = `college_${user.collageId}`;
     socket.join(collegeRoom);
     console.log(`${user.email} joined college room: ${collegeRoom}`);
 
-    // Listen for announcements
+    // ✅ Allow only admins/superadmins to send announcements
     socket.on("send_announcement", async (data: IMsg) => {
       try {
+        // Only admins/superadmins can send
+        if (!["admin", "superadmin"].includes(user.role)) {
+          socket.emit("error_occurred", {
+            message: "Not authorized to send announcements.",
+          });
+          return;
+        }
+
         // get conversation
         const conversation = await conversationService.getConByNameAndCollageId(
           {
@@ -57,12 +58,7 @@ export function announcementNamespace(announcementChat: Namespace) {
         // Emit only to same-college users
         announcementChat.to(collegeRoom).emit("new_announcement", updateMsg);
       } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error("Error:", error.message); // ✅ Safe access
-          socket.emit("error_occurred", { message: error.message });
-        } else {
-          console.error("Unknown error", error);
-        }
+        handleSocketError(socket, error, "announcement_error");
       }
     });
   });

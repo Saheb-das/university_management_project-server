@@ -1,19 +1,19 @@
 // internal import
-import { CustomError } from "../lib/error";
 import stuffRepository from "../repository/stuff";
 import collageRepository from "../repository/collage";
+import batchRepository from "../repository/batch";
+import degreeRepository from "../repository/degree";
+import conversationRepository from "../repository/conversation";
+import participantRepository from "../repository/participant";
+import { CustomError } from "../lib/error";
+import { calcCommission } from "../utils/commission";
+import { genHashedPassword } from "../lib/password";
 import admissionRepository, {
   TAdmissionStats,
   TAdmissionWithCommission,
   TAdmissionWithDetails,
   TLastYearTopper,
 } from "../repository/admission";
-import batchRepository from "../repository/batch";
-import { calcCommission } from "../utils/commission";
-import { genHashedPassword } from "../lib/password";
-import degreeRepository from "../repository/degree";
-import conversationRepository from "../repository/conversation";
-import participantRepository from "../repository/participant";
 
 // types import
 import { Admission } from "@prisma/client";
@@ -66,7 +66,6 @@ async function createAdmission(
     }
 
     const commissionIncome = calcCommission({
-      courseName: isExistBatch.course.name,
       degreeType: isExistDegree.type,
       departmentType: isExistBatch.department.type,
       role: "stuff",
@@ -147,19 +146,36 @@ async function createAdmission(
       throw new CustomError("dropbox participant not created", 500);
     }
 
-    // create classgroup conversation
-    const classgroupCon = await conversationRepository.create({
-      conName: `classgroup ${isExistBatch.name}`,
-      collageId: collageId,
+    // Find or create class group conversation
+    let group = await conversationRepository.findByNameAndCollageId({
+      conName: `classroom ${isExistBatch.name}`,
+      collageId,
     });
-    if (!classgroupCon) {
-      throw new CustomError("classgroup conversation not created", 500);
+
+    if (!group) {
+      group = await conversationRepository.create({
+        conName: `classroom ${isExistBatch.name}`,
+        collageId,
+      });
+      if (!group)
+        throw new CustomError("classroom conversation not created", 500);
+    }
+
+    // Add participant to the group
+    const added = await participantRepository.create({
+      conId: group.id,
+      role: payload.role,
+      userId: newAdmission.student.profile.userId,
+    });
+
+    if (!added) {
+      throw new CustomError("classroom participant not created", 500);
     }
 
     return newAdmission;
   } catch (error) {
     console.log("Error create admission", error);
-    return null;
+    throw error;
   }
 }
 

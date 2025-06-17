@@ -162,7 +162,7 @@ async function remove(
     });
 
     if (!obj) {
-      return null;
+      throw Error("asign teacher not found");
     }
 
     const removedItem = await tx.asignTeacher.delete({

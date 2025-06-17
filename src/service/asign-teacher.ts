@@ -59,20 +59,20 @@ async function asignTeacher(
       throw new CustomError("asign teacher not created", 500);
     }
 
-    // join classgroup conversation
+    // join classgroup conversations
 
     // 1. find batch conversation
     const classgroupCon = await conversationRepository.findByNameAndCollageId({
-      conName: `classgroup ${batch.name}`,
+      conName: `classroom ${batch.name}`,
       collageId: collageId,
     });
     if (!classgroupCon) {
-      throw new CustomError("classgroup conversation not found", 404);
+      throw new CustomError("classroom conversation not found", 404);
     }
 
     const partQuery: IPartQuery = {
       collageId: collageId,
-      conName: `classgroup ${batch.name}`,
+      conName: `classroom ${batch.name}`,
       userId: teacher.profile.userId,
     };
 
@@ -89,7 +89,7 @@ async function asignTeacher(
       // join to batch conversation
       const addToClassgroup = await participantRepository.create(partPayload);
       if (!addToClassgroup) {
-        throw new CustomError("classgroup participant not created", 500);
+        throw new CustomError("classroom participant not created", 500);
       }
     }
 
@@ -169,18 +169,17 @@ async function removeSubjectFromTeacher(
       throw new CustomError("batches not found", 404);
     }
 
-    const teacherBatchesArr: string[] = [];
+    // unique batches
+    const uniqueBatchNames = [
+      ...new Set(batches.map((item) => item.batch.name)),
+    ];
 
-    // store unique batch name
-    batches.forEach((item) => {
-      if (!teacherBatchesArr.includes(item.batch.name)) {
-        teacherBatchesArr.push(item.batch.name);
-      }
-    });
+    console.log("unique batch:", uniqueBatchNames);
+    console.log(uniqueBatchNames.includes(removedSubject.batch.name));
 
-    if (!teacherBatchesArr.includes(removedSubject.batch.name)) {
+    if (!uniqueBatchNames.includes(removedSubject.batch.name)) {
       const removePayload: IRemovePart = {
-        conName: removedSubject.batch.name,
+        conName: `classroom ${removedSubject.batch.name}`,
         userId: teacher.profile.userId,
         collageId: collageId,
         role: "teacher",
@@ -195,7 +194,7 @@ async function removeSubjectFromTeacher(
     return removedSubject;
   } catch (error) {
     console.log("Error remove subject", error);
-    return null;
+    throw error;
   }
 }
 

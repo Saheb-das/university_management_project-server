@@ -3,7 +3,7 @@ import { authenticateSocket } from "../middleware/authenticate";
 import { authorizeSocket } from "../middleware/permission";
 import messageService from "../service/message";
 import conversationService from "../service/conversation";
-import { CustomError } from "../lib/error";
+import { CustomError, handleSocketError } from "../lib/error";
 
 // types import
 import { Namespace } from "socket.io";
@@ -67,12 +67,7 @@ export function dropboxNamespace(dropboxChat: Namespace) {
         // Emit only to same-college users
         dropboxChat.to(collegeRoom).emit("new_dropbox", updateMsg);
       } catch (error: unknown) {
-        if (error instanceof Error) {
-          console.error("Error:", error.message); // ✅ Safe access
-          socket.emit("error_occurred", { message: error.message });
-        } else {
-          console.error("Unknown error", error);
-        }
+        handleSocketError(socket, error, "dropbox_error");
       }
     });
   });

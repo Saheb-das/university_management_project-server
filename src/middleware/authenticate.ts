@@ -38,7 +38,7 @@ async function authenticateHTTP(
   }
 }
 
-// middleware for socket (ws) connection - namespace lavel middleware
+// middleware for socket (ws) connection - namespace level middleware
 function authenticateSocket(
   socket: Socket,
   next: (err?: ExtendedError) => void

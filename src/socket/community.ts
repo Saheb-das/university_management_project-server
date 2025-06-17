@@ -1,7 +1,7 @@
 // internal import
 import { authenticateSocket } from "../middleware/authenticate";
 import conversationService from "../service/conversation";
-import { CustomError } from "../lib/error";
+import { CustomError, handleSocketError } from "../lib/error";
 import messageService from "../service/message";
 
 // types import
@@ -18,14 +18,9 @@ export function communityNamespace(communityChat: Namespace) {
 
     // ✅ Authorization logic
     if (
-      !authorizeSocket([
-        "admin",
-        "superadmin",
-        "accountant",
-        "counsellor",
-        "examceller",
-        "teacher",
-      ])(socket)
+      !authorizeSocket(["accountant", "counsellor", "examceller", "teacher"])(
+        socket
+      )
     ) {
       socket.disconnect(true);
       return;
@@ -64,9 +59,8 @@ export function communityNamespace(communityChat: Namespace) {
 
         // Emit only to same-college users
         communityChat.to(roleBasedRoom).emit("new_community", updateMsg);
-      } catch (error: any) {
-        console.error("Error:", error.message); // ✅ Safe access
-        socket.emit("error_occurred", { message: error.message });
+      } catch (error: unknown) {
+        handleSocketError(socket, error, "community_error");
       }
     });
   });

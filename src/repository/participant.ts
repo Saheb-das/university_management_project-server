@@ -10,7 +10,7 @@ export interface IParticipant {
   userId: string;
 }
 
-async function create(payload: IParticipant): Promise<Participant | null> {
+async function create(payload: IParticipant): Promise<Participant> {
   const newPart = await prisma.participant.create({
     data: {
       role: payload.role,
@@ -51,6 +51,8 @@ export interface IRemovePart {
 }
 async function remove(payload: IRemovePart): Promise<Participant | null> {
   const removedPart = await prisma.$transaction(async (tx) => {
+    console.log(payload);
+
     // find participant
     const participant = await tx.participant.findFirst({
       where: {
@@ -68,11 +70,13 @@ async function remove(payload: IRemovePart): Promise<Participant | null> {
     }
 
     // delete participant
-    const removed = await prisma.participant.delete({
+    const removed = await tx.participant.delete({
       where: {
         id: participant.id,
       },
     });
+    console.log(removed);
+
     return removed;
   });
 

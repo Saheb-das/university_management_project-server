@@ -147,14 +147,30 @@ async function findByIdWithDetails(
   return userWithDetails;
 }
 
+export type UserWithAvatar = Prisma.UserGetPayload<{
+  include: {
+    profile: {
+      select: {
+        avatar: true;
+      };
+    };
+  };
+}>;
 async function findByEmailAndRole(
   email: string,
   role: UserRole
-): Promise<User | null> {
+): Promise<UserWithAvatar | null> {
   const user = await prisma.user.findFirst({
     where: {
       email: email,
       role: role,
+    },
+    include: {
+      profile: {
+        select: {
+          avatar: true,
+        },
+      },
     },
   });
   return user;

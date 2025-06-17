@@ -124,6 +124,7 @@ interface ILogin {
     name: string;
     email: string;
     collageId: string;
+    avatar: string;
   };
 }
 async function login(data: TLoginClient): Promise<ILogin | null> {
@@ -162,13 +163,14 @@ async function login(data: TLoginClient): Promise<ILogin | null> {
         id: user.id,
         name: `${user.firstName} ${user.lastName}`,
         role: user.role,
+        avatar: user.profile?.avatar || "",
         email: user.email,
         collageId: user.collageId,
       },
     };
   } catch (error) {
     console.log("Error in login", error);
-    return null;
+    throw error;
   }
 }
 

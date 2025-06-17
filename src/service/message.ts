@@ -1,14 +1,13 @@
 // internal import
-import messageRepository from "../repository/message";
+import messageRepository, { TMsgWithSender } from "../repository/message";
 import userRepository from "../repository/user";
 import conversationRepository from "../repository/conversation";
 
 // types import
-import { Message } from "@prisma/client";
 import { IMessage } from "../repository/message";
 import { CustomError } from "../lib/error";
 
-async function createMessage(msg: IMessage): Promise<Message | null> {
+async function createMessage(msg: IMessage): Promise<TMsgWithSender | null> {
   try {
     const user = await userRepository.findById(msg.userId);
     if (!user) {
