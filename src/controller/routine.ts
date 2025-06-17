@@ -303,9 +303,47 @@ async function getRoutineByBatchName(
   }
 }
 
+async function getLecturesByTeacherUserIdAndDay(
+  req: AuthRequest<{}, {}, { userId: string; day: string }>,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  const { userId, day } = req.query;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!userId) {
+      throw new CustomError("teacher user id required", 400);
+    }
+
+    if (!day) {
+      throw new CustomError("day required", 404);
+    }
+
+    const lectures = await routineService.getAllLecturesByTeacherUserIdAndDay(
+      userId,
+      day
+    );
+    if (!lectures) {
+      throw new CustomError("lectures not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "lectures fetched successfully",
+      lectures: lectures,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // export
 export default {
   createRoutine,
   getRoutineByBatchName,
   getScheduleByBatchId,
+  getLecturesByTeacherUserIdAndDay,
 };

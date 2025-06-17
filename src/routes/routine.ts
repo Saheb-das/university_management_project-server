@@ -14,5 +14,7 @@ router.get("/batch/:batch", routineController.getRoutineByBatchName);
 
 router.get("/batch/:batchId/schedule", routineController.getScheduleByBatchId);
 
+router.get("/lectures", routineController.getLecturesByTeacherUserIdAndDay);
+
 // export
 export default router;

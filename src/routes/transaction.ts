@@ -25,6 +25,11 @@ router.get(
 );
 
 router.get(
+  "/stuff/:userId",
+  transactionController.getLastMonthTransactionByStuffUserId
+);
+
+router.get(
   "/:id",
   // checkPermission("read_transaction"),
   transactionController.getTransaction

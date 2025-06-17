@@ -2,6 +2,8 @@
 import routineRepository, { RoutineWithDetails } from "../repository/routine";
 import batchRepository from "../repository/batch";
 import semesterRepository from "../repository/semester";
+import stuffRepository from "../repository/stuff";
+import lectureRepository, { TLecWithSub } from "../repository/lecture";
 import scheduleRepository, {
   TScheduleWithLecture,
 } from "../repository/schedule";
@@ -121,9 +123,40 @@ async function getScheduleByBatchId(
   }
 }
 
+async function getAllLecturesByTeacherUserIdAndDay(
+  userId: string,
+  day: string
+): Promise<TLecWithSub[] | []> {
+  try {
+    const stuff = await stuffRepository.findByUserId(userId);
+    if (!stuff) {
+      throw new CustomError("stuff user not found", 404);
+    }
+
+    const teacher = await stuffRepository.findByIdAndRole(stuff.id, "teacher");
+    if (!teacher) {
+      throw new CustomError("teacher not found", 404);
+    }
+
+    const lectures = await lectureRepository.findAllByTeacherIdAndDay(
+      teacher.id,
+      day
+    );
+    if (!lectures) {
+      throw new CustomError("lectures not found", 404);
+    }
+
+    return lectures;
+  } catch (error) {
+    console.log("Error fetching lectures", error);
+    throw error;
+  }
+}
+
 // export
 export default {
   createRoutine,
   getRoutineByBatchName,
   getScheduleByBatchId,
+  getAllLecturesByTeacherUserIdAndDay,
 };

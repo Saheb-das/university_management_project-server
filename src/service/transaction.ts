@@ -220,6 +220,29 @@ async function getAllTransactionsByRoleAndUserId(
   }
 }
 
+async function getLastMonthTransactionByStuffUserId(
+  userId: string
+): Promise<Transaction | null> {
+  try {
+    const stuff = await stuffRepository.findByUserId(userId);
+    if (!stuff) {
+      throw new CustomError("stuff user not found", 404);
+    }
+
+    const transaction = await transactionRepository.findPrevMonthByStuffId(
+      stuff.id
+    );
+    if (!transaction) {
+      throw new CustomError("transaction not found", 404);
+    }
+
+    return transaction;
+  } catch (error) {
+    console.log("Error fetching transaction", error);
+    throw error;
+  }
+}
+
 async function verifyTutionFeeById(
   feeId: string,
   tranId: string
@@ -244,5 +267,6 @@ export default {
   getTransaction,
   getFeeTransactionByStudentId,
   getAllTransactionsByRoleAndUserId,
+  getLastMonthTransactionByStuffUserId,
   verifyTutionFeeById,
 };

@@ -117,6 +117,37 @@ async function getTransaction(
   }
 }
 
+async function getLastMonthTransactionByStuffUserId(
+  req: AuthRequest<{}, { userId: string }>,
+  res: Response,
+  next: NextFunction
+) {
+  const { userId } = req.params;
+  try {
+    if (!req.authUser) {
+      throw new CustomError("unauthorized user", 401);
+    }
+
+    if (!userId) {
+      throw new CustomError("stuff user id required", 400);
+    }
+
+    const transaction =
+      await transactionService.getLastMonthTransactionByStuffUserId(userId);
+    if (!transaction) {
+      throw new CustomError("transaction not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "transaction fetched successfully",
+      transaction: transaction,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 async function getMyTransactions(
   req: AuthRequest,
   res: Response,
@@ -229,5 +260,6 @@ export default {
   getTransaction,
   getMyTransactions,
   getFeeTransactionByStudentId,
+  getLastMonthTransactionByStuffUserId,
   verifyTutionFeeById,
 };

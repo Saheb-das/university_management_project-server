@@ -216,6 +216,54 @@ async function findAllByRoleAndRoleId(
   return transactions;
 }
 
+async function findPrevMonthByStuffId(
+  stuffId: string
+): Promise<Transaction | null> {
+  const now = new Date();
+
+  // Get start of current month (e.g., June 1)
+  const startOfThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  // Get start of next month (e.g., July 1)
+  const startOfNextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+  // Get previous month's name
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  let prevMonthIndex = now.getMonth() - 1;
+
+  let prevMonth =
+    months[prevMonthIndex < 0 ? 11 : prevMonthIndex].toLowerCase();
+
+  const transaction = await prisma.transaction.findFirst({
+    where: {
+      createdAt: {
+        gte: startOfThisMonth,
+        lt: startOfNextMonth,
+      },
+      salary: {
+        recieverId: stuffId,
+        inMonth: prevMonth as Month,
+      },
+    },
+  });
+
+  return transaction;
+}
+
 // export
 export default {
   create,
@@ -223,4 +271,5 @@ export default {
   findByType,
   findAllByQuery,
   findAllByRoleAndRoleId,
+  findPrevMonthByStuffId,
 };
