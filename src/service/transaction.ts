@@ -152,7 +152,7 @@ async function getTransaction(
     return transaction;
   } catch (error) {
     console.log("Error fetching transaction", error);
-    return null;
+    throw error;
   }
 }
 
