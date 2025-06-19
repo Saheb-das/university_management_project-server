@@ -43,8 +43,8 @@ This is the backend API and realtime service for the **University Management Sys
 │   ├── 📁 types/                   # TypeScript custom types and interfaces
 │   ├── 📁 utils/                   # Utility functions
 │   ├── 📁 zod/                     # Zod schemas for validation
-│   └── index.ts                   # App entry point
-├── .env                           # Environment variables
+│   └── server.ts                   # App entry point
+├── .env                            # Environment variables
 ├── package.json
 ├── tsconfig.json
 └── README.md
