@@ -8,6 +8,7 @@ This is the backend API and realtime service for the **University Management Sys
 
 | Layer       | Technology                       |
 | ----------- | -------------------------------- |
+| Language    | Typescript                       |
 | Framework   | Express.js                       |
 | Database    | PostgreSQL                       |
 | ORM         | Prisma                           |
@@ -19,7 +20,37 @@ This is the backend API and realtime service for the **University Management Sys
 
 ---
 
-## 📁 Folder Structure
+## 📁 Project Folder Structure
+
+```bash
+📁 server/                          # Root backend directory
+├── 📁 dist/                        # Compiled JavaScript output (after build)
+├── 📁 prisma/                      # Prisma schema and migrations
+│   ├── migrations/
+│   └── schema.prisma
+├── 📁 src/                         # Source code (TypeScript)
+│   ├── 📁 cache/                   # Caching logic (e.g., NodeCache)
+│   ├── 📁 config/                  # App configuration (DB, server, etc.)
+│   ├── 📁 controllers/             # Route controllers
+│   ├── 📁 lib/                     # External libraries or helper modules
+│   ├── 📁 middleware/              # Express middlewares (auth, error handling)
+│   ├── 📁 multer/                  # File upload logic
+│   ├── 📁 razorpay/                # Razorpay payment integration
+│   ├── 📁 repository/              # Data access layer (Prisma calls)
+│   ├── 📁 routes/                  # Express route definitions
+│   ├── 📁 service/                 # Business logic
+│   ├── 📁 socket/                  # Socket.IO logic and handlers
+│   ├── 📁 types/                   # TypeScript custom types and interfaces
+│   ├── 📁 utils/                   # Utility functions
+│   ├── 📁 zod/                     # Zod schemas for validation
+│   └── index.ts                   # App entry point
+├── .env                           # Environment variables
+├── package.json
+├── tsconfig.json
+└── README.md
+
+
+```
 
 ---
 
@@ -27,7 +58,7 @@ This is the backend API and realtime service for the **University Management Sys
 
 ### 🔐 Authentication & Role Management
 
-- JWT-based authentication (`jose`)
+- JWT-based authentication
 - Login/register endpoints
 - Role-based access control (Superadmin, Admin, Counsellor, Exam Cell, Accountant, Teacher, Student)
 
@@ -40,7 +71,6 @@ This is the backend API and realtime service for the **University Management Sys
 ### 📦 File Uploads
 
 - Upload project files and study materials using **Multer**
-- Cloud integration ready (e.g., Cloudinary/S3)
 
 ### 💬 Realtime Communication
 
@@ -50,8 +80,7 @@ This is the backend API and realtime service for the **University Management Sys
 ### 💰 Payments & Salary
 
 - Students can pay **tuition fees via Razorpay**
-- Admins can view and manage salary records
-- Razorpay webhook support for verification
+- Accountant can view and manage salary records
 
 ---
 
@@ -60,9 +89,9 @@ This is the backend API and realtime service for the **University Management Sys
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/university-management-system-backend.git
+git clone https://github.com/Saheb-das/university_management_project-server.git
 
-cd university-management-system-backend
+cd university_management_project-server
 ```
 
 ### 2. Install Dependencies
@@ -82,6 +111,8 @@ DATABASE_URL= postgresql://user:password@localhost:5432/university_db
 
 RAZORPAY_KEY_ID= your_razorpay_key
 RAZORPAY_SECRET= your_razorpay_secret
+
+JWT_SECRET_KEY = "jwt_secret_key"
 
 GMAIL_HOST = "gmail_host"
 GMAIL_USER = "emaxple@gmail.com"
