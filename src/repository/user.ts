@@ -158,13 +158,25 @@ export type UserWithAvatar = Prisma.UserGetPayload<{
 }>;
 async function findByEmailAndRole(
   email: string,
-  role: UserRole
+  role: UserRole,
+  collageId: string = ""
 ): Promise<UserWithAvatar | null> {
-  const user = await prisma.user.findFirst({
-    where: {
+  let whereClause: any;
+
+  if (collageId) {
+    whereClause = {
       email: email,
       role: role,
-    },
+      collageId,
+    };
+  } else {
+    whereClause = {
+      email: email,
+      role: role,
+    };
+  }
+  const user = await prisma.user.findFirst({
+    where: whereClause,
     include: {
       profile: {
         select: {

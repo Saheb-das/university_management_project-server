@@ -72,9 +72,13 @@ async function login(
       throw new CustomError("data required", 400);
     }
 
+    console.log(data);
+
     const isValidData = loginSchema.safeParse(data);
     if (!isValidData.success) {
-      throw new CustomError("invalid credential", 400);
+      console.log(isValidData.error.errors);
+
+      throw new CustomError("invalid credential", 400, isValidData.error);
     }
 
     const userWithToken = await authService.login(isValidData.data);
@@ -96,16 +100,21 @@ async function login(
 export interface IForgotPassword {
   email: string;
   role: string;
+  collageId: string;
 }
 async function forgotPassword(
   req: Request<{}, {}, IForgotPassword>,
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const { email, role } = req.body;
+  const { email, role, collageId } = req.body;
   try {
     if (!email || !role) {
       throw new CustomError("email and role required", 400);
+    }
+
+    if (!collageId) {
+      throw new CustomError("collage requried", 400);
     }
 
     const isConfirm = await authService.forgotPassword(req.body);
@@ -130,13 +139,16 @@ async function verifyOTP(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const { email, role, enteredOTP } = req.body;
+  const { email, role, enteredOTP, collageId } = req.body;
   try {
-    if (!email || !role || !enteredOTP) {
+    if (!email || !role || !enteredOTP || !collageId) {
       throw new CustomError("email, role and otp required", 400);
     }
 
-    const isVerified = await authService.verifyOTP({ email, role }, enteredOTP);
+    const isVerified = await authService.verifyOTP(
+      { email, role, collageId },
+      enteredOTP
+    );
     if (!isVerified) {
       throw new CustomError("otp not verified", 500);
     }
@@ -158,10 +170,14 @@ async function resetPassword(
   res: Response,
   next: NextFunction
 ): Promise<void> {
-  const { email, role, newPassword } = req.body;
+  const { email, role, newPassword, collageId } = req.body;
   try {
     if (!email || !role || !newPassword) {
       throw new CustomError("email, role and otp required", 400);
+    }
+
+    if (!collageId) {
+      throw new CustomError("collage required", 400);
     }
 
     const isValid = passwordValidation.safeParse(newPassword);
@@ -170,7 +186,7 @@ async function resetPassword(
     }
 
     const isVerified = await authService.resetPassword(
-      { email, role },
+      { email, role, collageId },
       isValid.data
     );
     if (!isVerified) {
@@ -186,6 +202,27 @@ async function resetPassword(
   }
 }
 
+async function getCollages(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const collages = await authService.getAllCollages();
+    if (!collages) {
+      throw new CustomError("collage not found", 404);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "collages fetched successfully",
+      collages: collages,
+    });
+  } catch (error) {
+    next(error);
+  }
+}
+
 // export
 export default {
   register,
@@ -193,4 +230,5 @@ export default {
   forgotPassword,
   verifyOTP,
   resetPassword,
+  getCollages,
 };

@@ -3,7 +3,7 @@ import collageService, { IDeprtInfo } from "../service/collage";
 import { CustomError } from "../lib/error";
 
 // types imoprt
-import { Response, NextFunction } from "express";
+import { Response, NextFunction, Request } from "express";
 import { AuthRequest, ICollageUpdate } from "../types";
 
 async function getCollage(

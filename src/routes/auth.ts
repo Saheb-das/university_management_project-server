@@ -18,5 +18,7 @@ router.post("/verify-otp", authController.verifyOTP);
 
 router.post("/reset-password", authController.resetPassword);
 
+router.get("/collages", authController.getCollages);
+
 // export
 export default router;

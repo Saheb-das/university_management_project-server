@@ -2,7 +2,7 @@
 import prisma from "../lib/prisma";
 
 // types import
-import { Collage } from "@prisma/client";
+import { Collage, Prisma } from "@prisma/client";
 import { ICollage, ICollageUpdate } from "../types/collage";
 
 async function create(payload: ICollage): Promise<Collage | null> {
@@ -18,6 +18,23 @@ async function create(payload: ICollage): Promise<Collage | null> {
   });
 
   return newCollage;
+}
+
+export type TCollage = Prisma.CollageGetPayload<{
+  select: {
+    name: true;
+    id: true;
+  };
+}>;
+async function findAll(): Promise<TCollage[] | []> {
+  const collages = await prisma.collage.findMany({
+    select: {
+      name: true,
+      id: true,
+    },
+  });
+
+  return collages;
 }
 
 async function findById(collageId: string): Promise<Collage | null> {
@@ -78,5 +95,6 @@ async function update(
 export default {
   create,
   findById,
+  findAll,
   update,
 };

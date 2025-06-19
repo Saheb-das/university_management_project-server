@@ -3,12 +3,17 @@ import express from "express";
 
 // internal import
 import admissionController from "../controller/admission";
+import { checkPermission } from "../middleware/permission";
 
 // create router
 const router = express.Router();
 
 // routes
-router.post("/", admissionController.createAdmission);
+router.post(
+  "/",
+  checkPermission("create_student"),
+  admissionController.createAdmission
+);
 
 router.get("/", admissionController.getAdmissions);
 

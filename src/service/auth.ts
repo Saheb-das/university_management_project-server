@@ -1,5 +1,5 @@
 // internal import
-import collageRepository from "../repository/collage";
+import collageRepository, { TCollage } from "../repository/collage";
 import bankRepository from "../repository/bank";
 import userRepository from "../repository/user";
 import { compareHashedPassword, genHashedPassword } from "../lib/password";
@@ -135,7 +135,7 @@ async function login(data: TLoginClient): Promise<ILogin | null> {
 
     const user = await userRepository.findByEmailAndRole(data.email, data.role);
     if (!user) {
-      throw new CustomError("Invalid Credentials", 401);
+      throw new CustomError("user not found", 404);
     }
 
     const isValidPass = await compareHashedPassword(
@@ -178,7 +178,8 @@ async function forgotPassword(info: IForgotPassword): Promise<string | null> {
   try {
     const user = await userRepository.findByEmailAndRole(
       info.email,
-      info.role as UserRole
+      info.role as UserRole,
+      info.collageId
     );
     if (!user) {
       throw new CustomError("user not found", 404);
@@ -187,7 +188,11 @@ async function forgotPassword(info: IForgotPassword): Promise<string | null> {
     const otp = generateOTP({ digit: 6 });
 
     // cache otp
-    const otpCached = cache.set(`${user.email}_${user.role}`, otp, 10 * 60);
+    const otpCached = cache.set(
+      `${user.collageId}_${user.email}_${user.role}`,
+      otp,
+      10 * 60
+    );
     if (!otpCached) {
       throw new CustomError("otp not cached", 500);
     }
@@ -201,7 +206,7 @@ async function forgotPassword(info: IForgotPassword): Promise<string | null> {
     return sendMail;
   } catch (error) {
     console.log("Error forgot password", error);
-    return null;
+    throw error;
   }
 }
 
@@ -212,13 +217,14 @@ async function verifyOTP(
   try {
     const user = await userRepository.findByEmailAndRole(
       userInfo.email,
-      userInfo.role as UserRole
+      userInfo.role as UserRole,
+      userInfo.collageId
     );
     if (!user) {
       throw new CustomError("user not found", 404);
     }
 
-    const getOTP = cache.get(`${user.email}_${user.role}`);
+    const getOTP = cache.get(`${user.collageId}_${user.email}_${user.role}`);
     if (!getOTP) {
       throw new CustomError("otp expired");
     }
@@ -230,7 +236,7 @@ async function verifyOTP(
     return true;
   } catch (error) {
     console.log("Error verify otp", error);
-    return null;
+    throw error;
   }
 }
 
@@ -241,7 +247,8 @@ async function resetPassword(
   try {
     const user = await userRepository.findByEmailAndRole(
       userInfo.email,
-      userInfo.role as UserRole
+      userInfo.role as UserRole,
+      userInfo.collageId
     );
     if (!user) {
       throw new CustomError("user not found", 404);
@@ -266,7 +273,21 @@ async function resetPassword(
     return updatedUser;
   } catch (error) {
     console.log("Error reset password", error);
-    return null;
+    throw error;
+  }
+}
+
+async function getAllCollages(): Promise<TCollage[] | []> {
+  try {
+    const collages = await collageRepository.findAll();
+    if (!collages) {
+      throw new CustomError("collages not found", 404);
+    }
+
+    return collages;
+  } catch (error) {
+    console.log("Error fetching all collages", error);
+    throw error;
   }
 }
 
@@ -277,4 +298,5 @@ export default {
   forgotPassword,
   verifyOTP,
   resetPassword,
+  getAllCollages,
 };
