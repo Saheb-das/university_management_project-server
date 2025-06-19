@@ -14,12 +14,15 @@ interface IJwtPayload {
 
 // generate access token ( or auth token )
 function genJwtAccessToken(payload: IJwtPayload): string {
-  return `Bearer ${jwt.sign(payload, process.env.SECRET_KEY || "secreat_key")}`;
+  return `Bearer ${jwt.sign(
+    payload,
+    process.env.JWT_SECRET_KEY || "secret_key"
+  )}`;
 }
 
 // verify access token
 function verifyAccessToken(token: string): JwtPayload | null {
-  const decoded = jwt.verify(token, process.env.SECRET_KEY || "secreat_key");
+  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY || "secret_key");
 
   if (typeof decoded === "string") {
     return JSON.parse(decoded);
