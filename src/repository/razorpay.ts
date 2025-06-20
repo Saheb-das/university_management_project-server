@@ -3,7 +3,7 @@ import prisma from "../lib/prisma";
 
 // types import
 import { RazorpayTransaction } from "@prisma/client";
-import { TVerifyOrderClient } from "../zod/transaction";
+import { TVerifyOrderClient } from "../zod/razorpay";
 
 async function create(
   payload: TVerifyOrderClient,

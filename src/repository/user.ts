@@ -116,17 +116,20 @@ async function findById(
   return user;
 }
 
+type FindByIdWithDetailsInclude =
+  | { profile: { include: { student: true } } }
+  | { profile: { include: { stuff: true } } }
+  | { profile: true };
+
 type UserWithProfile = Prisma.UserGetPayload<{
-  include: {
-    profile: true;
-  };
+  include: FindByIdWithDetailsInclude;
 }>;
 
 async function findByIdWithDetails(
   userId: string,
   roleOpt: RoleOpt
 ): Promise<UserWithProfile | null> {
-  let profileInclude: any;
+  let profileInclude: FindByIdWithDetailsInclude;
   if (roleOpt.student) {
     profileInclude = { profile: { include: { student: true } } };
   } else if (roleOpt.stuff) {

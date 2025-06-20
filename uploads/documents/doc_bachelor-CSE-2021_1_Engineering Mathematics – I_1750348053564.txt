@@ -1,0 +1,89 @@
+Common Backend Topic
+
+build
+** Backend Tuff or main concept is RAW REQUUIREMENT ---> DESIGN
+concept
+
+1. API Design
+  i) REST API
+ ii) GraphQL
+ iii) GRPC
+ iv) SOAP( < 1%)
+ v) WebSocket( really tuf)
+ vi) Massage Broker( not beginner concept)
+
+2. API Security
+i)JWT token
+ii) Refresh token
+    (not starting concept)
+iii) OAuth2
+iv)samal
+v)Identity Providers( like cognito, firebase)
+vi) Role base authorization
+
+3. API testing
+i)unit testing
+ii)Acceptance testing
+iii) load testing 
+
+4. API Documentation
+i)swager
+ii)postman
+
+responsibility( low not High level)
+
+1. Database
+
+i)NoSQL
+ a)MongoDB
+ b)AWS/ DynamoDB
+
+ii) SQL
+a) postgra SQL
+b)MySQL
+c) MS SQL/Oracal( Advance )
+
+iii) InMemory( mandatory)
+a)Reddis
+b)Mem cache
+
+iv) Graph DB( Advance)
+a) neophor
+
+( future needed )
+2. Server( linux )
+3. Cloud
+4. DevOps
+
+server application responsibilty
+1. listen Request 
+i)Always same 
+
+2. Process
+i)Algorithm
+ii)Data Structure
+iii)Databse
+iv) Prob Solving
+v) CRUD
+
+3. Response 
+i)Always same
+
+
+http
+1. GET( Read from server )
+2. POST( Create new data )
+3. PUT/PETCH ( Update exiting data )
+4. DELETE( Delete data from database)
+
+
+Pipe Line( This is the whole Backend Process )
+Request ->(request logger, body Parser, File Parser, User IP, Block IP, Authentication, Authoraization, Validation)Middleware... -> Controller( processing ) /* Main Bussiness Logic */ -> (Error Handller)Middleware.../* it is Optional*/ -> Response
+
+/* Express */
+
+Express has mainly 3 types of work
+ 1. Route handling
+ 2. work with Middleware
+ 3. work with Template eng
+
